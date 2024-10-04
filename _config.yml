@@ -9,9 +9,9 @@
 locale                   : "en-US"
 title                    : "Aysin Tumay / aysintumay"
 title_separator          : "/"
-name                     : &name "Ayşın Tümay"
-description              : &description "B.Sc. Student in Department of Electrical and Electronics Engineering, Bilkent University"
-description              : &description "Bilkent University"
+name                     : &name "Aysin Tumay"
+description              : &description "Ph.D. Student in Department of Computer Science and Engineering, "
+description              : &description "UC San Diego"
 url                      : https://aysintumay.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "aysintumay/academicpages.github.io"
@@ -83,11 +83,11 @@ analytics:
 author:
   name             : "Aysin Tumay"
   avatar           : "personal.jpg"
-  bio              : "Machine Learning Researcher, Senior student at Electrical and Electronics Engineering Department, Bilkent University"
-  location         : "Ankara, Turkey"
+  bio              : "First-year Ph.D student advised by Prof. Rose Yu at UC San Diego"
+  location         : "La Jolla, CA"
   employer         :
   googlescholar    : "https://scholar.google.com/citations?user=nl7wl0AAAAAJ&hl=tr"
-  email            : "aysin.tumay@ug.bilkent.edu.tr"
+  email            : "atmay@ucsd.edu"
   researchgate     : "https://www.researchgate.net/profile/Aysin-Tuemay"
   uri              :
   bitbucket        :
