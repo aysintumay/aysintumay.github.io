@@ -1,9 +1,9 @@
 ---
-title: "ChatGPT Analysis with STS"
+title: "Deep Learning for Self Driving Cars"
 collection: portfolio
 ---
 ---
-ChatGPT Analysis with STS
+Deep Learning for Self Driving Cars
 ---
 
-This study addresses the ethical concerns surrounding ChatGPT, a technology based on the GPT language model. We utilize the frameworks of Social Construction of Technology (STS) and Inclusive Engineering (IE) to investigate the technology's ethical implications, particularly in terms of privacy, transparency, and plagiarism in education. The ultimate goal is to contribute to the conversation on AI ethics by exploring how ChatGPT can be developed and utilized in a more responsible and inclusive manner, while considering the diverse needs of all parties involved. 
+This project aims to develop Deep Learning models for the autonomous driving task as the term project of CSE251B in Spring 2025 at UC San Diego. The data is a subset of the [Argoverse 2 dataset](https://www.argoverse.org/av2.html) with point of interest and agent data. For this spatiotemporal prediction task, we ensemble LSTMs trained on different agent data. See the source code [here](https://github.com/aysintumay/trajectory-prediction-for-autonomous-driving).
