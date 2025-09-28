@@ -1,0 +1,15 @@
+---
+title: 'Guitar and Me'
+date: 2018-05-14
+permalink: /posts/2012/08/blog-post-1/
+tags:
+
+---
+I have been playing guitar since 2012. I have performed with my guitar duo in an orchestra. Here are some pictures from moments I enjoyed.
+
+
+<br/><img src='/images/guitar.jpeg'>
+
+<br/><img src='/images/guitar_2.jpeg'>
+
+<br/><img src='/images/guitar_3.jpeg'>
