@@ -3,9 +3,9 @@ title: "[Hierarchical Ensemble-based Feature Selection for Time Series Forecasti
 layout: single  # Specify the layout template (e.g., 'single', 'post', 'default')
 collection: publications
 excerpt: 'This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking...'
-date: 2024-01-20
-venue: 'Machine Learning'
-citation: 'A. Tumay, M. E. Aydin, A. T. Koc, S. S. Kozat. &quot; Hierarchical Ensemble-based Feature Selection for Time Series Forecasting.&quot; <i>Machine Learning</i>. Submitted, 2023. (doi:10.48550/arXiv.2310.17544)'
+date: 2025-08-20
+venue: 'Digital Signal Processing'
+citation: 'H. Karaca, A. Tumay, A. T. Koc, S. S. Kozat. &quot; Hierarchical Ensemble-based Feature Selection for Time Series Forecasting.&quot; <i>Digital Signal Processing</i>., 2025.'
 ---
 
 
