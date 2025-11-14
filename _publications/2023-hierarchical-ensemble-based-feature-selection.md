@@ -6,12 +6,14 @@ excerpt: "This paper introduces a novel ensemble approach for feature selection 
 date: 2025-08-20
 venue: "Digital Signal Processing"
 citation: |
+'''
   @article{Karaca2025_HierarchicalFS,
     author  = {H. Karaca and A. Tumay and A. T. Koc and S. S. Kozat},
     title   = {Hierarchical Ensemble-based Feature Selection for Time Series Forecasting},
     journal = {Digital Signal Processing},
     year    = {2025},
   }
+'''
 ---
 
 
