@@ -1,5 +1,5 @@
 ---
-title: "[Hierarchical Ensemble-based Feature Selection for Time Series Forecasting](https://arxiv.org/abs/2310.17544)"
+title: "Hierarchical Ensemble-based Feature Selection for Time Series Forecasting"
 layout: single
 collection: publications
 excerpt: "This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking..."
