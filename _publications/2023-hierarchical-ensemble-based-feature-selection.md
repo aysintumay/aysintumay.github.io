@@ -1,11 +1,17 @@
 ---
 title: "[Hierarchical Ensemble-based Feature Selection for Time Series Forecasting](https://arxiv.org/abs/2310.17544)"
-layout: single  # Specify the layout template (e.g., 'single', 'post', 'default')
+layout: single
 collection: publications
-excerpt: 'This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking...'
+excerpt: "This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking..."
 date: 2025-08-20
-venue: 'Digital Signal Processing'
-citation: 'H. Karaca, A. Tumay, A. T. Koc, S. S. Kozat. &quot; Hierarchical Ensemble-based Feature Selection for Time Series Forecasting.&quot; <i>Digital Signal Processing</i>., 2025.'
+venue: "Digital Signal Processing"
+citation: |
+  @article{Karaca2025_HierarchicalFS,
+    author  = {H. Karaca and A. Tumay and A. T. Koc and S. S. Kozat},
+    title   = {Hierarchical Ensemble-based Feature Selection for Time Series Forecasting},
+    journal = {Digital Signal Processing},
+    year    = {2025},
+  }
 ---
 
 
