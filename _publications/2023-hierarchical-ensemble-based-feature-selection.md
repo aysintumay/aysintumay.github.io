@@ -2,10 +2,11 @@
 title: "Hierarchical Ensemble-based Feature Selection for Time Series Forecasting"
 layout: single
 collection: publications
-excerpt: "This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking..."
+excerpt: ""
 date: 2025-08-20
 venue: "Digital Signal Processing"
 ---
+Recommended citation:
 ```bibtex
   @article{Karaca2025_HierarchicalFS,
     author  = {H. Karaca and A. Tumay and A. T. Koc and S. S. Kozat},
