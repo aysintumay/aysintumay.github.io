@@ -5,7 +5,7 @@ collection: publications
 excerpt: "This paper introduces a novel ensemble approach for feature selection based on hierarchical stacking..."
 date: 2025-08-20
 venue: "Digital Signal Processing"
-citation: |
+citation:
 ```
   @article{Karaca2025_HierarchicalFS,
     author  = {H. Karaca and A. Tumay and A. T. Koc and S. S. Kozat},
