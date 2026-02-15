@@ -3,14 +3,11 @@ title: "Wind Energy Production Prediction"
 collection: portfolio
 ---
 ---
-Wind Energy Production Prediction
+Smart Weaning of Mechanical Circulatory Support Devices with Offline Reinforcement Learning
 ---
-Department of Electrical and Electronics Engineering, Bilkent University.
+Rose Lab, University of California, San Diego.
  
-A forecasting system for total electric consumption plays a prominent role in the electric generation market. Moreover, creating a precise forecast system is a hot topic for many high-tech companies. To this end, our goal is to forecast hourly total electrical energy consumption in Spain with regression models, which are Linear Regression, Decision Tree, and AdaBoost. The machine learning models are coded without library support.
 
-<br/><img src='/images/wind_foto.png'>
+We study the sequential decision-making problem for automated weaning of mechanical circulatory support (MCS) devices in patients with cardiogenic shock. MCS devices are percutaneous micro-axial flow pumps that provide left ventricular unloading and forward blood flow, but current weaning strategies vary significantly across care teams and lack data-driven approaches. We formulate this problem with Offline Reinforcement Learning (RL) with states as physiological signals, actions as MCS pump-level inputs, and the transition function as a digital twin world model. However, our setting presents challenges for traditional Offline RL methods, such as highly uncertain circulatory dynamics due to concurrent treatments and limited data availability. This consequently results in sparsity in the state-action space. We design our solution on top of model-based policy optimization with additions of (1) reward shaping with clinically-aware metrics, (2) density-aware regularization on transition rollouts during policy optimization.
 
-Prediction and ground truth of wind energy production of Spain with AdaBoost algorithm.
-
-Check out the [source code](https://github.com/aysintumay/EEE485/tree/Project).
+Check out our [latest paper](https://arxiv.org/abs/2511.06111) and the [source code](https://github.com/Rose-STL-Lab/CORMPO).
