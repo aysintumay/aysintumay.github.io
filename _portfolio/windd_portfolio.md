@@ -1,6 +1,7 @@
 ---
 title: "Wind Energy Production Prediction"
 collection: portfolio
+date: 2024-01-15
 ---
 ---
 Wind Energy Production Prediction
