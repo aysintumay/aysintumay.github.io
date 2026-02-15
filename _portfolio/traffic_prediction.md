@@ -1,7 +1,7 @@
 ---
 title: "Machine Learning Based Spatio-Temporal Prediction System for Traffic Accidents"
 collection: portfolio
-date: 2024-05
+date: 2024-05-30
 ---
 ---
 Machine Learning Based Spatio-Temporal Prediction System for Traffic Accidents
