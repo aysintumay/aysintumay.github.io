@@ -1,7 +1,7 @@
 ---
 title: "A Basic Level Category Analysis with Commonsense Question Answering"
 collection: portfolio
-date: 2023-05
+date: 2023-05-30
 ---
 ---
 A Basic Level Category Analysis with Commonsense Question Answering
