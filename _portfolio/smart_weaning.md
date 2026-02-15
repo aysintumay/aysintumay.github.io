@@ -1,5 +1,5 @@
 ---
-title: "Wind Energy Production Prediction"
+title: "Smart Weaning of Mechanical Circulatory Support Devices with Offline Reinforcement Learning"
 collection: portfolio
 ---
 ---
