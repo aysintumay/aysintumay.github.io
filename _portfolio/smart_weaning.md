@@ -1,6 +1,7 @@
 ---
 title: "Smart Weaning of Mechanical Circulatory Support Devices with Offline Reinforcement Learning"
 collection: portfolio
+date: 2025-11-08
 ---
 ---
 Smart Weaning of Mechanical Circulatory Support Devices with Offline Reinforcement Learning
