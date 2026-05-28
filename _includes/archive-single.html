@@ -47,7 +47,7 @@
             to <i>{{ post.venue }}</i>
           {% endif %}
           {% if post.date %}
-            , {{ post.date | date: "%Y" }}
+           {{ post.date | date: "%Y" }}
           {% endif %}
         </p>
         {% elsif post.date %}
