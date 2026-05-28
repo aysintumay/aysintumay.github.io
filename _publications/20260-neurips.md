@@ -1,24 +1,26 @@
 ---
-title: "Guardian-regularized Safe Offline Reinforcement Learning for Smart Weaning of Mechanical Circulatory Devices"
+title: "Generative OOD-regularized Model-based Policy Optimization"
 layout: single
 collection: publications
 excerpt: ''
-date: 2025-10-27
-venue: 'Machine Learning for Health Symposium'
+date: 2026-05
+venue: 'Submitted to NeurIPS 2026'
 ---
-[arXiv:2511.06111](https://arxiv.org/abs/2511.06111)
+[arXiv:2605.24405](https://arxiv.org/abs/2605.24405)
 
-We study the sequential decision-making problem for automated weaning of mechanical circulatory support (MCS) devices in cardiogenic shock patients. MCS devices are percutaneous micro-axial flow pumps that provide left ventricular unloading and forward blood flow, but current weaning strategies vary significantly across care teams and lack data-driven approaches. Offline reinforcement learning (RL) has proven to be successful in sequential decision-making tasks, but our setting presents challenges for training and evaluating traditional offline RL methods: prohibition of online patient interaction, highly uncertain circulatory dynamics due to concurrent treatments, and limited data availability. We developed an end-to-end machine learning framework with two key contributions (1) Clinically-aware OOD-regularized Model-based Policy Optimization (CORMPO), a density-regularized offline RL algorithm for out-of-distribution suppression that also incorporates clinically-informed reward shaping and (2) a Transformer-based probabilistic digital twin that models MCS circulatory dynamics for policy evaluation with rich physiological and clinical metrics. We prove that CORMPO achieves theoretical performance guarantees under mild assumptions. CORMPO attains a higher reward than the offline RL baselines by 28% and higher scores in clinical metrics by 82.6% on real and synthetic datasets. Our approach offers a principled framework for safe offline policy learning in high-stakes medical applications where domain expertise and safety constraints are essential.
+We study sequential decision-making with offline reinforcement learning (RL). Traditional offline RL policies may result in out-of-distribution (OOD) actions when training relies only on sparse offline representations. To ensure safe offline policies in a sparse state-action space, we explore how density estimation models can be integrated into model-based RL methods to avoid the OOD regions. Generative models are capable of explicitly modeling the density in sparse state-action spaces. Building on this, we introduce Generative OOD-regularized Model-based Policy Optimization (GORMPO), a density-regularized offline RL algorithm that uses generative density modeling to restrict policy updates to high-density areas of the dataset. Furthermore, we examine whether better OOD detection corresponds to better model-based offline policies. We compare (1) the OOD detection capabilities of various density estimators and (2) their performance within the GORMPO framework on a real-world medical dataset and sparse offline RL datasets. We theoretically guarantee GORMPO's performance under mild assumptions. Empirically, GORMPO outperforms state-of-the-art baselines by 17% on a real-world medical dataset and enhances the base model on the offline RL datasets. Our empirical findings show that better OOD detection generally results in improved policies in environments with stable dynamics, while conservative penalties with poor density estimation are favored when dynamics are uncertain.
 
 
 Recommended citation:
 
 ```bibtex
-@inproceedings{Tumay2025_ML4H,
-  author    = {A. Tumay and S. H. Sun and S. Fereidooni and A. Dumas and E. Jortberg and R. Yu},
-  title     = {Guardian-regularized Safe Offline Reinforcement Learning for Smart Weaning of Mechanical Circulatory Devices},
-  booktitle = {Proceedings of the Machine Learning for Health (ML4H) Symposium},
-  year      = {2025},
-  note      = {To appear}
+@misc{tumay2026generativeoodregularizedmodelbasedpolicy,
+      title={Generative OOD-regularized Model-based Policy Optimization}, 
+      author={Aysin Tumay and Jiahe Huang and Elise Jortberg and Rose Yu},
+      year={2026},
+      eprint={2605.24405},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2605.24405}, 
 }
 ```
