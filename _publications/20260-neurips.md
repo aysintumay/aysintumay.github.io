@@ -4,7 +4,8 @@ layout: single
 collection: publications
 excerpt: ''
 date: 2026-05-23
-venue: 'Submitted to NeurIPS 2026'
+venue: 'NeurIPS'
+status: "Submitted"
 ---
 [arXiv:2605.24405](https://arxiv.org/abs/2605.24405)
 
