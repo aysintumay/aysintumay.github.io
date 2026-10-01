@@ -5,7 +5,7 @@ collection: publications
 excerpt: ''
 date: 2026-05-23
 venue: 'NeurIPS'
-status: "Submitted"
+status: "Accepted"
 ---
 [arXiv:2605.24405](https://arxiv.org/abs/2605.24405)
 
