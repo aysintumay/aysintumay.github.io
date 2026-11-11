@@ -462,9 +462,9 @@ html.preload *,html.preload *::before,html.preload *::after{transition:none!impo
       <div class="esec sel acc-brown" tabindex="0" data-group="track" data-id="medical" id="eval-impella">
         <div class="head"><span class="name">Impella weaning</span><span class="ehint">+ click a dataset to see results</span><span class="sub" id="impSub"></span></div>
         <div class="ebody"><div>
-        <div class="imp-goal"><b style="color:#c82828">!</b><span>The clinician cut the P-level from 9 to 2 and blood pressure fell below the critical threshold. The pump should <b class="dn">not</b> be weaned this fast.</span></div>
+        <div class="imp-goal"><b style="color:#c82828">!</b><span>The clinician cut the pump level from 9 to 2 and blood pressure fell below the critical threshold. The pump should <b class="dn">not</b> be weaned this fast.</span></div>
         <div class="imp-pair">
-          <div class="fig"><div class="imp-badge" id="impBadgeC"></div><div class="slot imp"><img src="impella_map_cormpo.png?v=5" alt="CORMPO: recommended pump level and predicted blood pressure over six hours in the digital twin"></div><div class="cap">CORMPO</div></div>
+          <div class="fig"><div class="imp-badge" id="impBadgeC"></div><div class="slot imp"><img src="impella_map_cormpo.png?v=7" alt="CORMPO: recommended pump level and predicted blood pressure over six hours in the digital twin"></div><div class="cap">CORMPO</div></div>
           <div class="fig"><div class="imp-badge" id="impBadgeG"></div><div class="slot imp" id="impG"><img id="impImg" src="impella_map_node.png" alt=""><span id="impNone">no MOBILE-based<br>medical policy</span></div><div class="cap" id="impCap">GORMPO</div></div>
         </div>
         <div class="imp-key"><span><i class="k-map"></i>blood pressure</span><span><i class="k-map dash"></i>observed</span><span><i class="k-pl"></i>P-level</span><span><i class="k-pl dash"></i>clinician decision</span><span><i class="k-thr"></i>critical threshold</span></div>
@@ -516,7 +516,7 @@ function setGains(){
   const ek = state.est || "node", none = back === "mobile";
   badge($("impBadgeC"), IMP.cormpo); badge($("impBadgeG"), none ? null : IMP[ek]);
   $("impG").classList.toggle("none", none);
-  $("impImg").src = `impella_map_${ek}.png?v=5`;
+  $("impImg").src = `impella_map_${ek}.png?v=7`;
   $("impImg").alt = `GORMPO-${EST_NAME[ek]}: recommended pump level and predicted blood pressure over six hours`;
   $("impCap").textContent = none ? "GORMPO" : `GORMPO-${EST_NAME[ek]}`;
   $("impSub").textContent = none ? "Blood pressure and P-level over 6 h in the digital twin" : `Blood pressure and P-level over 6 h in the digital twin`;
