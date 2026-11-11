@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generative OOD-regularized Model-based Policy Optimization (GORMPO)</title>
+  <meta name="description" content="GORMPO (NeurIPS 2026): offline RL that uses generative density models to keep policies away from the sparse, out-of-distribution parts of the data.">
+  <meta property="og:title" content="Generative OOD-regularized Model-based Policy Optimization (GORMPO)">
+  <meta property="og:description" content="GORMPO penalizes the reward of imagined transitions that a generative density model finds unlikely, keeping model-based offline RL where the data can back it up. We benchmark five density estimators (KDE, VAE, RealNVP, diffusion, Neural ODE) on a real medical dataset and sparse D4RL. NeurIPS 2026.">
+  <meta property="og:image" content="https://aysintumay.github.io/gormpo/static/images/gormpo_overview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script src="./static/js/template.v2.js"></script>
+  <link rel="stylesheet" href="./static/css/index.css?v=17">
+</head>
+<body>
+
+<d-front-matter>
+  <script type="text/json">{
+    "title": "Generative OOD-regularized Model-based Policy Optimization",
+    "description": "Generative OOD-regularized Model-based Policy Optimization (NeurIPS 2026)",
+    "authors": [
+      {"author": "Aysin Tumay", "authorURL": "https://aysintumay.github.io/",
+       "affiliation": "UC San Diego", "affiliationURL": "https://ucsd.edu/"},
+      {"author": "Jiahe Huang", "authorURL": "https://jhhuang.site/",
+       "affiliation": "UC San Diego", "affiliationURL": "https://ucsd.edu/"},
+      {"author": "Elise Jortberg",
+       "affiliation": "Abiomed"},
+      {"author": "Rose Yu", "authorURL": "https://roseyu.com/",
+       "affiliation": "UC San Diego", "affiliationURL": "https://ucsd.edu/"}
+    ]
+  }</script>
+</d-front-matter>
+
+<d-title>
+  <h1>Generative OOD-regularized Model-based Policy Optimization</h1>
+  <div class="authors">
+    <span><a href="https://aysintumay.github.io/">Aysin Tumay</a><sup>1</sup></span>
+    <span><a href="https://jhhuang.site/">Jiahe Huang</a><sup>1</sup></span>
+    <span>Elise Jortberg<sup>2</sup></span>
+    <span><a href="https://roseyu.com/">Rose Yu</a><sup>1</sup></span>
+  </div>
+  <div class="affiliations"><sup>1</sup>UC San Diego &nbsp;&nbsp; <sup>2</sup>Abiomed</div>
+  <p><b>TL;DR:</b> GORMPO scores every transition its world model imagines with a generative model of the offline
+     data and penalizes the reward of ones it hasn't seen, keeping the policy where the data can back it up. Testing
+     five density estimators on a real medical dataset and sparse D4RL, we find that the model that best spots
+     out-of-distribution data usually trains the best policy, as long as the environment is predictable enough for
+     the world model to imagine accurately.</p>
+  <div class="links l-page">
+    <a href="https://openreview.net/forum?id=3KDoYUU2CU">Paper</a>
+    <a href="https://arxiv.org/abs/2605.24405v2">arXiv</a>
+    <a href="https://github.com/Rose-STL-Lab/GORMPO">Code</a>
+    <a href="https://huggingface.co/aysin/GORMPO">Models</a>
+    <a href="https://huggingface.co/datasets/aysin/sparse_medium_expert_D4RL">Data</a>
+    <a href="#citation">Cite</a>
+  </div>
+  <figure class="l-screen-inset system-diagram">
+    <iframe id="system-diagram" src="./static/diagram/system_diagram.html?v=42" title="Interactive GORMPO system diagram" scrolling="no"></iframe>
+  </figure>
+  <script>
+    window.addEventListener("message", e => {
+      const h = e.data && e.data.gormpoDiagramHeight;
+      if (h) document.getElementById("system-diagram").style.height = h + "px";
+    });
+  </script>
+</d-title>
+
+<d-byline></d-byline>
+
+<d-article>
+
+<h2 id="problem">Learning from a dataset with Sparse Demonstrations</h2>
+
+<p>
+  In offline reinforcement learning you get a fixed pile of logged experience and no permission to collect
+  more. That's exactly the situation in medicine: you can't try out a new treatment strategy on a patient just to
+  see what happens. The agent has to learn a good policy from whatever the clinicians already did.
+</p>
+
+<p>
+  
+  Our starting point was the clinical task where we learn how to wean patients off of a temporary heart pump by controlling the Pump level (p-level). In this task, clinical logs can be unbalanced in some areas: stablized patients are more common than patients with lack of clinical support. Almost no data sits in the
+  corner where the patient is doing badly <i>and</i> the pump is turned down. This leads to policies poorly learning how to act in risky conditions.
+</p>
+
+
+<p>
+  Model-based offline RL makes this worse in a sneaky way. These methods learn a model of the world and then
+  generate imagined experience to enhance the offline data. In the sparse corners the world model is just as
+  clueless as the agent, but it still produces confident-looking predictions, often too optimistic ones.
+  The agent then learns to chase rewards that don't exist.
+</p>
+
+<p>
+  The obvious fix is to measure how familiar each imagined step is, and earlier clinical work did exactly that with a
+  kernel density estimate (KDE). But a density penalty is only as good as the density model behind it. On our medical
+  data, KDE gives most of the imagined rollouts the same rock-bottom score: a step that is slightly off and
+  one that is wildly off look identical, so the penalty can't tell them apart. A more expressive model like a
+  Neural ODE spreads the rollouts out, so the further a step drifts from the data, the lower its score.
+</p>
+
+
+<figure class="l-page">
+  <img src="./static/images/fig1_medical_likelihoods_right.png" style="max-width: 620px; display: block; margin: 0 auto;"
+       alt="Log-likelihood histograms of training data and world-model rollouts under KDE and Neural ODE density models">
+  <figcaption>How likely two density models think the training data (orange) and the world model's imagined
+    rollouts (purple) are on our medical dataset. The rollouts land well outside the data. KDE dumps most of them
+    into one spike at its lowest score, while the Neural ODE spreads them out smoothly.</figcaption>
+</figure>
+
+
+<h2 id="idea">Ask a generative model before you trust the imagination</h2>
+
+<p>
+  Generative models can be formulated to tell you how likely a data point is. So before training
+  the policy, we fit a density model to the offline next state - action pairs. Every time the world model rolls out the next step, the density
+  model assesses its likelihood jointly with the action produced by the training policy. The step's reward is then penalized by
+  <code>tanh(max(threshold − log-likelihood, 0))</code>: a step at least as likely as the real data keeps its reward,
+  and the penalty grows, up to a fixed cap, the less familiar the step looks.
+</p>
+
+
+<p>
+  The guardian is plug-and-play. We tried five quite different density estimators, from a classic kernel density
+  estimate to modern deep generative models: <b>KDE</b>, a <b>VAE</b><d-cite key="kingma2014vae"></d-cite>, <b>RealNVP</b><d-cite key="dinh2017realnvp"></d-cite> (a normalizing flow),
+  <b>DDPM</b><d-cite key="ho2020ddpm"></d-cite> (a diffusion model) and a <b>Neural ODE</b><d-cite key="chen2018node"></d-cite> flow. GORMPO also isn't tied to one RL algorithm;
+  we built it on top of both MBPO<d-cite key="janner2019mbpo"></d-cite> and MOBILE<d-cite key="sun2023mobile"></d-cite>. <b>Anyone can use our density-based guardian to enhance their rewards 
+  on any offline RL benchmark, after picking the best density model for their task.</b>
+</p>
+
+<p>
+  That set-up let us ask a question we were curious about: <i>if a density model is better at spotting
+  out-of-distribution data, does it make a better guardian for offline RL?</i> Usually, but not always. More on that at the end.
+</p>
+
+<h2 id="d4rl">GORMPO on Sparse D4RL (MuJoCo) Task</h2>
+
+<p>
+  To make the robot benchmarks look like the medical problem, we thinned out the same kind of corner in the D4RL<d-cite key="fu2021d4rl"></d-cite>
+  locomotion datasets: transitions with low reward <i>and</i> small actions.
+  Adding the density penalty to MOBILE improved it on all three tasks. The hopper
+  result is our favorite: an 18.7% gain, and MOBILE's ±24.5 hides runs that collapse.
+</p>
+
+<figure class="l-page bar-panels" id="d4rl-results">
+  <div class="bp-buttons" role="group" aria-label="Dataset"></div>
+  <div class="bp-legend"></div>
+  <div class="bp-panels"></div>
+  <figcaption>D4RL normalized return on the sparse medium-expert datasets, mean ± std over 3 seeds (Table 1 of the
+    paper): the SPOT, MBPO and MOBILE baselines (gray) and MOBILE with GORMPO's penalty from each density model (colored). Pick a dataset
+    to enlarge its panel; the best result per dataset is in bold.</figcaption>
+</figure>
+
+<p>
+  To see what those numbers look like, we rolled out MOBILE and GORMPO side by side. Every episode below
+  starts in a state from the thinned-out corner. Each start is a moment taken from the original data but removed from the
+  training set, so neither agent has seen it. Red lines mark the fall limits: the allowed torso tilt (the two upright lines) and the lowest allowed torso height
+  (the horizontal line). The torso's own line and centre are green and turn red when the agent crosses a limit.
+  Scores are D4RL normalized returns, where 100 is roughly expert level.
+</p>
+
+
+<figure class="l-page video-figure">
+  <video controls muted playsinline preload="metadata" poster="./static/images/hopper_poster.jpg?v=7">
+    <source src="./static/videos/hopper.mp4?v=7" type="video/mp4">
+  </video>
+  <figcaption><b>Hopper.</b> MOBILE hops for about 200 steps, then its legs fold and its torso drops below the
+    height limit. GORMPO (DDPM) hops all 1000 steps (score 119 vs. 29). Across 30 sparse-region starts, GORMPO
+    finished every episode, while MOBILE (same training seed) fell early in 15.</figcaption>
+</figure>
+
+<figure class="l-page video-figure">
+  <video controls muted playsinline preload="metadata" poster="./static/images/walker2d_poster.jpg?v=7">
+    <source src="./static/videos/walker2d.mp4?v=7" type="video/mp4">
+  </video>
+  <figcaption><b>Walker2d.</b> MOBILE walks for about 340 steps, then tips over backward. GORMPO (RealNVP)
+    walks all 1000 steps (score 125 vs. 33).</figcaption>
+</figure>
+
+<figure class="l-page video-figure">
+  <video controls muted playsinline preload="metadata" poster="./static/images/halfcheetah_poster.jpg?v=8">
+    <source src="./static/videos/halfcheetah.mp4?v=8" type="video/mp4">
+  </video>
+  <figcaption><b>HalfCheetah.</b> The halfcheetah can't fall, but it can flip. Both start running; then MOBILE
+    flips onto its back and stays stuck there, while GORMPO (VAE) keeps running (score 109 vs. 25). Played at 1.5× speed.</figcaption>
+</figure>
+
+<h2 id="medical">GORMPO on Smart Weaning Task</h2>
+
+<p>
+  The problem that started all this is weaning patients off the heart pump. The policy picks a pump
+  level at each hour optimized on a physiological reward function that reflects how stable the patient's blood pressure and heart function are.
+  </aside>Too much support for too long has its own risks, and stepping down too fast can destabilize the patient.
+  We score policies on three things: the physiological <b>reward</b>, a weaning score (<b>WS</b>, how sensibly the
+  policy steps support down) and an action-change penalty (<b>ACP</b>, how abruptly it changes the pump level).
+</p>
+
+<figure class="l-page bar-panels" id="medical-metrics">
+  <div class="bp-buttons" role="group" aria-label="Metric"></div>
+  <div class="bp-legend"></div>
+  <div class="bp-panels"></div>
+  <figcaption>GORMPO variants (colored) vs. offline RL baselines (gray) on the medical dataset: mean ± std over 10
+    seeds and 1000 evaluation episodes (Table 3 of the paper). Pick a metric to enlarge its panel; hover a bar for
+    its exact value. Reward and weaning score: higher is better. Action change penalty: lower is better.</figcaption>
+</figure>
+
+
+<ul>
+  <li><b>Reward:</b> GMB-TRPO (the algorithm from OGSRL<d-cite key="yan2025ogsrl"></d-cite>) keeps patients the most stable, but it gets there by
+    changing the pump level often, and it rarely weans. GORMPO-NeuralODE and GORMPO-RealNVP come next, ahead of
+    SPOT<d-cite key="wu2022spot"></d-cite>, MBPO<d-cite key="janner2019mbpo"></d-cite>, MOBILE<d-cite key="sun2023mobile"></d-cite> and CORMPO<d-cite key="tumay2026cormpo"></d-cite>.</li>
+  <li><b>Weaning:</b> GORMPO-RealNVP has the best weaning score of every model.</li>
+  <li><b>Smoothness:</b> CORMPO exhibits conservative actions with the change in pump level least of all, but, at a lower reward. Among the GORMPO
+    variants, the Neural ODE is both the most stable and the smoothest.</li>
+</ul>
+
+<p>
+  No method wins on all three at once, so they have to be read together. One more thing worth saying: CORMPO
+  relies on reward shaping designed for this clinical task, while GORMPO uses no domain-specific shaping at all.
+  The same recipe runs unchanged on the robot simulations above. Within GORMPO, clinicians would pick the guardian based on the trade-off the care
+  team actually wants.
+</p>
+
+<!-- Patient trajectory figure. To replace it with a pre-recorded video later, swap the <img> below for:
+     <video controls muted playsinline preload="metadata" poster="./static/images/medical_comparison.png">
+       <source src="./static/videos/medical_comparison.mp4" type="video/mp4">
+     </video> -->
+<figure class="l-page">
+  <img src="./static/images/medical_comparison.png" alt="Recommended pump levels and predicted blood pressure for one patient over six hours, per method">
+  <figcaption>One patient's rolled-out six-hour trajectories by baselines and GORMPO-NeuralODE. Solid blue: the pump level each policy recommends; dashed blue:
+    what was actually used. Red: predicted (solid) and observed (dashed) mean arterial pressure; dotted gray: the
+    clinical threshold. Blood pressure stays above the threshold, so the ideal move is to step support down every
+    hour. GORMPO-NeuralODE follows that pattern more closely than the baselines.</figcaption>
+</figure>
+
+
+<h2 id="detectors">OOD Detection Performance: Which guardian spots trouble best?</h2>
+
+<p>
+  To test each density model as an OOD detector, we took real transitions, pushed copies of them away from the data
+  by a controlled amount (the <i>OOD distance</i>), and asked the model to sort real from shifted. A good guardian
+  has to do two things at once: <b>catch</b> the shifted samples and <b>keep</b> the real ones. Drag the sliders to make
+  the test easier: the shifted data moves away from the real data, and the models move toward the ideal corner.
+</p>
+
+<figure class="l-page" id="ood-scatter">
+  <div class="ood-controls"></div>
+  <div class="ood-data-legend"></div>
+  <div class="ood-legend"></div>
+  <div class="ood-panels"></div>
+  <figcaption>
+    <b>Top plot:</b> OOD test dataset plots show the Euclediean norm of each
+    action against each state for real samples and for the shifted copies at the chosen distance.
+    Each shifted data point is its real sample with a Gaussian noise added, moved further away as the distance grows.
+    <b>Bottom plot:</b>  Each point is a density model. Real samples count as positives, and shifted samples are negatives. 
+    So, real data kept (TPR) is the share of real samples it lets through and OOD data caught (TNR) is the share of shifted samples it flags.
+     ROC AUC measures how well its likelihoods separate real from shifted, before any threshold is picked. The medical dataset was only scored on ROC AUC and accuracy, so its panel keeps those axes. Switch the axes to
+    compare any pair of metrics. The ringed point is the best detector on that task.
+  </figcaption>
+</figure>
+
+<p>
+  OOD detection results show some inconsistencies across metrics. KDE has a near-perfect ROC AUC yet keeps none of the real data because its threshold is so strict that it flags everything as OOD. On HalfCheetah, RealNVP does the
+  opposite by keeping all the real data but catching almost none of the OOD samples. Neural ODE flags nearly
+  every OOD sample but keeps only about half of the real ones. 
+<p>
+
+</p>
+  The winners are the models that land in the good corner: VAE on HalfCheetah and RealNVP on
+  Hopper and Walker2d. On the medical data, the task is actually easier since valid patient states sit in a
+  well-defined region. Neural ODE matches RealNVP's near-perfect ROC AUC, has the best accuracy at
+  every distance, and reaches near-perfect accuracy. RealNVP's accuracy stays flat because its threshold is set to flag a small share of the real
+  validation data, which builds in an error floor.
+</p>
+
+<p>
+  Testing our hypothesis, the best detector usually trains the best policy too; VAE on HalfCheetah, RealNVP on Walker2d, and the Neural ODE
+  on the medical data. The exception is Hopper, whose episodes end unpredictably and
+  make the world model bare more uncertainty. In this case, the diffusion model, the weakest detector of the bunch, leads to the best policy.
+  The reason is that it gives low likelihoods to almost everything, keeping the
+  policy closer to the data.
+  Sometimes the best guardian isn't the sharpest one, just the most cautious and conservative.
+</p>
+
+<script src="./static/js/results_charts.js?v=4"></script>
+<script src="./static/js/ood_points.js?v=2"></script>
+<script src="./static/js/ood_scatter.js?v=10"></script>
+
+<h2 id="takeaways">What we learned</h2>
+
+<p>
+  <b>Knowing where your data coverage is sparse is half the battle.</b> A density penalty is a cheap, plug-in way to stop
+  model-based offline RL from exploiting its own world model.
+</p>
+
+<p>
+  <b>Better OOD detection usually buys a better policy, as long as the dynamics are predictable.</b> When the world
+  is hard to model, a rougher but more conservative penalty can win instead.
+</p>
+
+<p>
+  <b>There's no universally best density model.</b> A VAE, and a normalizing flow each
+  came out on top on a different dataset, and on the medical data the flow and the Neural ODE led the GORMPO
+  variants. Treat the guardian as a design choice, not a fixed component.
+</p>
+
+
+
+<h2 id="future">Limitations and future work</h2>
+
+<div class="l-page future-grid">
+  <div class="future-card">
+    <div class="future-num">1</div>
+    <h3>More model-based policies</h3>
+    <ul>
+      <li>Tested so far on MBPO and MOBILE only.</li>
+      <li>The penalty only changes rewards of imagined rollouts.</li>
+      <li>Next: plug it into other model-based offline RL methods.</li>
+    </ul>
+  </div>
+  <div class="future-card">
+    <div class="future-num">2</div>
+    <h3>A threshold-free, non-saturating penalty</h3>
+    <ul>
+      <li>The penalty relies on a likelihood threshold.</li>
+      <li>Skewed data can shift it and change how conservative the agent is.</li>
+      <li>tanh saturates near 1: far-off samples all cost the same.</li>
+      <li>Next: no threshold, and a penalty that keeps growing with distance.</li>
+    </ul>
+  </div>
+  <div class="future-card">
+    <div class="future-num">3</div>
+    <h3>Evaluation through a digital twin</h3>
+    <ul>
+      <li>Medical policies are scored in a Transformer digital twin.</li>
+      <li>The twin is itself a learned proxy for patient dynamics.</li>
+      <li>So the results can't establish clinical safety in real patients.</li>
+    </ul>
+  </div>
+</div>
+
+</d-article>
+
+<d-appendix>
+  <h3 id="citation">Citation</h3>
+  <p>If this work is useful to you, please cite the paper:</p>
+  <pre class="bibtex">@inproceedings{tumay2026gormpo,
+    title={Generative {OOD}-regularized Model-based Policy Optimization},
+    author={Tumay, Aysin and Huang, Jiahe and Jortberg, Elise and Yu, Rose},
+    booktitle={Advances in Neural Information Processing Systems},
+    year={2026},
+    url={https://openreview.net/forum?id=3KDoYUU2CU}
+}</pre>
+  <!-- <h3>About the videos</h3> -->
+  <!-- <p>Policies are the seed-456 (Hopper, HalfCheetah) and seed-123 (Walker2d) checkpoints of MOBILE and MOBILE-based -->
+    <!-- GORMPO. Episodes start from a state of the full D4RL medium-expert dataset whose transition lies in the sparse -->
+    <!-- region and was removed from the sparse training set. Rendered with MuJoCo.</p> -->
+  <h3>Disclaimer on Our Medical Results</h3>
+    <p>
+      These results come from a proprietary, de-identified dataset and a learned patient simulator. They show model
+      behavior for research and education and are <b>not</b> treatment guidance.
+    </p>
+  <h3>Acknowledgments</h3>
+    <p>
+      We thank <b>Abiomed</b> for the clinical dataset and for their support of this work. We also thank <b>Brian Jing</b> for his work on the later stages of this project via our Smart Weaning simulator. We appreciate the fruitful discussions with the members of <b>Rose Lab</b> at UC San Diego.
+    </p>
+</d-appendix>
+
+<d-bibliography><script type="text/bibtex">
+@inproceedings{janner2019mbpo,
+  title={When to Trust Your Model: Model-Based Policy Optimization},
+  author={Janner, Michael and Fu, Justin and Zhang, Marvin and Levine, Sergey},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={32}, year={2019},
+  url={https://arxiv.org/abs/1906.08253}
+}
+@inproceedings{sun2023mobile,
+  title={Model-Bellman Inconsistency for Model-based Offline Reinforcement Learning},
+  author={Sun, Yihao and Zhang, Jiaji and Jia, Chengxing and Lin, Haoxin and Ye, Junyin and Yu, Yang},
+  booktitle={Proceedings of the 40th International Conference on Machine Learning},
+  series={PMLR}, volume={202}, pages={33177--33194}, year={2023},
+  url={https://proceedings.mlr.press/v202/sun23q.html}
+}
+@inproceedings{tumay2026cormpo,
+  title={Guardian-Regularized Safe Offline Reinforcement Learning for Smart Weaning of Mechanical Circulatory Devices},
+  author={Tumay, Aysin and Sun, Sophia and Fereidooni, Sonia and Dumas, Aaron and Jortberg, Elise and Yu, Rose},
+  booktitle={Proceedings of the Fifth Machine Learning for Health Symposium},
+  series={PMLR}, volume={297}, pages={1269--1296}, year={2026}
+}
+@inproceedings{yan2025ogsrl,
+  title={Offline Guarded Safe Reinforcement Learning for Medical Treatment Optimization Strategies},
+  author={Yan, Runze and Shen, Xun and Wachi, Akifumi and Gros, Sebastien and Zhao, Anni and Hu, Xiao},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2025}
+}
+@inproceedings{wu2022spot,
+  title={Supported Policy Optimization for Offline Reinforcement Learning},
+  author={Wu, Jialong and Wu, Haixu and Qiu, Zihan and Wang, Jianmin and Long, Mingsheng},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35}, pages={31278--31291}, year={2022},
+  url={https://arxiv.org/abs/2202.06239}
+}
+@inproceedings{fu2021d4rl,
+  title={D4RL: Datasets for Deep Data-Driven Reinforcement Learning},
+  author={Fu, Justin and Kumar, Aviral and Nachum, Ofir and Tucker, George and Levine, Sergey},
+  booktitle={International Conference on Learning Representations},
+  year={2021},
+  url={https://arxiv.org/abs/2004.07219}
+}
+@inproceedings{kingma2014vae,
+  title={Auto-Encoding Variational Bayes},
+  author={Kingma, Diederik P. and Welling, Max},
+  booktitle={International Conference on Learning Representations},
+  year={2014},
+  url={https://arxiv.org/abs/1312.6114}
+}
+@inproceedings{dinh2017realnvp,
+  title={Density Estimation Using Real NVP},
+  author={Dinh, Laurent and Sohl-Dickstein, Jascha and Bengio, Samy},
+  booktitle={International Conference on Learning Representations},
+  year={2017},
+  url={https://arxiv.org/abs/1605.08803}
+}
+@inproceedings{ho2020ddpm,
+  title={Denoising Diffusion Probabilistic Models},
+  author={Ho, Jonathan and Jain, Ajay and Abbeel, Pieter},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={33}, year={2020},
+  url={https://arxiv.org/abs/2006.11239}
+}
+@inproceedings{chen2018node,
+  title={Neural Ordinary Differential Equations},
+  author={Chen, Ricky T. Q. and Rubanova, Yulia and Bettencourt, Jesse and Duvenaud, David},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={31}, year={2018},
+  url={https://arxiv.org/abs/1806.07366}
+}
+</script></d-bibliography>
+
+
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" class="preload">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GORMPO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --page:#ffffff; --frame:#fafbfd; --frame-line:#e3e6ec; --card:#ffffff; --line:#e1e4ea;
+  --text:#1d2230; --text-2:#5d6475; --muted:#a1a7b3; --link:#c9cdd6;
+  --slot:#f2f3f6; --slot-line:#d9dce3;
+  --center-a:#eef1f8; --center-b:#f7f1ea; --center-line:#c7cfe0;
+  --purple:#6b4fa0; --purple-bg:#f5f0fb; --purple-line:#c9b6e6;
+  --blue:#3c5fa8;   --blue-bg:#eef3fc;   --blue-line:#b3c6ea;
+  --teal:#2b7d70;   --teal-bg:#ecf7f4;   --teal-line:#a6d6cc;
+  --brown:#9a6328;  --brown-bg:#fbf3ea;  --brown-line:#e2c39d;
+  --idle:color-mix(in srgb,var(--card) 55%,var(--frame-line));
+  --idle-line:color-mix(in srgb,var(--line) 70%,var(--frame-line));
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0f1115; --frame:#14171d; --frame-line:#262b35; --card:#1a1e26; --line:#2a2f3a;
+    --text:#e8eaef; --text-2:#a9afbd; --muted:#646b7b; --link:#3a404d;
+    --slot:#20252e; --slot-line:#353b48; --center-a:#1a2030; --center-b:#241f1a; --center-line:#384260;
+    --purple:#bca6e8; --purple-bg:rgba(150,120,215,.14); --purple-line:#5d4b85;
+    --blue:#93b3ee;   --blue-bg:rgba(80,120,205,.15);   --blue-line:#3d5788;
+    --teal:#7fd0c0;   --teal-bg:rgba(60,170,150,.14);   --teal-line:#2f6a60;
+    --brown:#e3b07a;  --brown-bg:rgba(200,140,70,.14);  --brown-line:#7a5530;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0f1115; --frame:#14171d; --frame-line:#262b35; --card:#1a1e26; --line:#2a2f3a;
+  --text:#e8eaef; --text-2:#a9afbd; --muted:#646b7b; --link:#3a404d;
+  --slot:#20252e; --slot-line:#353b48; --center-a:#1a2030; --center-b:#241f1a; --center-line:#384260;
+  --purple:#bca6e8; --purple-bg:rgba(150,120,215,.14); --purple-line:#5d4b85;
+  --blue:#93b3ee;   --blue-bg:rgba(80,120,205,.15);   --blue-line:#3d5788;
+  --teal:#7fd0c0;   --teal-bg:rgba(60,170,150,.14);   --teal-line:#2f6a60;
+  --brown:#e3b07a;  --brown-bg:rgba(200,140,70,.14);  --brown-line:#7a5530;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page)}
+body{font-family:var(--sans);color:var(--text);padding:2px;-webkit-font-smoothing:antialiased}
+
+.acc-purple{--c:var(--purple);--c-bg:var(--purple-bg);--c-line:var(--purple-line)}
+.acc-blue{--c:var(--blue);--c-bg:var(--blue-bg);--c-line:var(--blue-line)}
+.acc-teal{--c:var(--teal);--c-bg:var(--teal-bg);--c-line:var(--teal-line)}
+.acc-brown{--c:var(--brown);--c-bg:var(--brown-bg);--c-line:var(--brown-line)}
+
+.frame{
+  position:relative;max-width:1280px;margin:0 auto;
+  background:var(--frame);border:1px solid var(--frame-line);border-radius:28px;
+  padding:26px 16px 26px 32px;
+  display:grid;
+  grid-template-columns:minmax(172px,0.6fr) minmax(460px,1.85fr) minmax(290px,1.1fr);
+  grid-template-areas:"est gorm eval" "back gorm eval" "data data eval";
+  column-gap:64px;row-gap:14px;align-items:center;
+}
+
+/* shared selection look */
+.sel{cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s,color .2s}
+.sel:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.name{font-size:16.5px;white-space:nowrap;font-weight:500;color:var(--text-2);transition:color .2s}
+.sel.on .name{color:var(--c)}
+.sel .slot,.sel .strip{transition:filter .25s,opacity .25s,border-color .2s}
+.sel:not(.on) .slot,.sel:not(.on) .strip{filter:grayscale(1);opacity:.5}
+.sel.on .slot,.sel.on .strip,.sel.on .strip .cell+.cell{border-color:var(--c-line)}
+
+/* list boxes (estimators, backbones) */
+.list{background:var(--idle);border:1px solid var(--idle-line);border-radius:18px;padding:8px;transition:border-color .2s,background .2s,box-shadow .2s}
+.list.has-on{background:var(--card);border-color:var(--c-line);box-shadow:0 6px 24px -14px var(--c)}
+.row{
+  all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:10px 10px;border-radius:12px;border:1px solid transparent;cursor:pointer;position:relative;
+}
+.row + .row{margin-top:3px}
+.row + .row::before{content:"";position:absolute;left:12px;right:12px;top:-2px;height:1px;background:var(--line)}
+.row:not(.on):hover{background:var(--card)}
+.row.on{background:var(--c-bg);border-color:var(--c-line)}
+.row.on::before,.row.on + .row::before{opacity:0}
+.g-est{grid-area:est;align-self:end}
+.g-back{grid-area:back;align-self:start;margin-left:24px}
+.g-back .row{padding:14px 10px}
+.rt{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sub{font-size:12.5px;color:var(--muted);line-height:1.35;transition:color .2s}
+.sel.on .sub{color:var(--c)}
+.cap{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.sel.on .cap{color:var(--c)}
+.fig{display:flex;flex-direction:column;gap:5px;min-width:0}
+.head{display:flex;flex-direction:column;gap:3px}
+
+/* slots (figures left empty) */
+.slot{
+  border-radius:8px;border:1px dashed var(--slot-line);
+  background:repeating-linear-gradient(135deg,var(--slot) 0 8px,transparent 8px 16px);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;aspect-ratio:4/3;
+}
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.slot:has(img){border-style:solid;background:#fff}
+.fig .slot + .slot{margin-top:3px}
+.slot span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--slot-line);border-radius:10px;overflow:hidden;
+  background:repeating-linear-gradient(135deg,var(--slot) 0 8px,transparent 8px 16px)}
+.strip .cell{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.strip .cell + .cell{border-left:1px solid var(--slot-line)}
+.strip .cell img{width:100%;height:100%;object-fit:cover;display:block}
+.strip .cell span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* center: GORMPO */
+.center{
+  grid-area:gorm;
+  border:1px solid var(--center-line);border-radius:30px;
+  background:linear-gradient(170deg,var(--center-a),var(--center-b));
+  box-shadow:0 30px 90px -24px rgba(110,130,210,.28),0 0 120px -30px rgba(210,170,130,.25);
+  padding:20px 20px 20px;display:flex;flex-direction:column;align-items:center;
+}
+.center h1{font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:6px}
+.center .tagline{font-size:16px;color:var(--text-2);margin-bottom:14px;text-align:center}
+.sysv{width:100%;height:auto;display:block;overflow:visible}
+.sysv .mod{fill:none;stroke:var(--idle-line);stroke-width:1.2;stroke-dasharray:6 4;transition:stroke .2s}
+.sysv .mod-bg{fill:var(--idle);opacity:.5;transition:fill .2s}
+.sysv .on .mod{stroke:var(--c-line)}
+.sysv .on .mod-bg{fill:var(--c-bg);opacity:1}
+.sysv .mlabel{font:500 11.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;fill:var(--muted);transition:fill .2s}
+.sysv .on .mlabel{fill:var(--c)}
+.sysv .nb rect{fill:var(--idle);stroke:var(--idle-line);stroke-width:1;transition:fill .2s,stroke .2s}
+.sysv .nb.on rect{fill:var(--card);stroke:var(--c-line)}
+.sysv .nt{font:600 12.5px var(--sans);fill:var(--text-2);transition:fill .2s}
+.sysv .ns{font:400 11px var(--sans);fill:var(--muted);transition:fill .2s}
+.sysv .nb.on .nt,.sysv .nb.on .ns{fill:var(--c)}
+.sysv .ar{fill:none;stroke:var(--link);stroke-width:1.3;transition:stroke .2s}
+.sysv .al{font:400 11.5px var(--mono);fill:var(--muted);transition:fill .2s}
+.sysv.flow .ar.p{stroke:var(--purple)} .sysv.flow .ar.b{stroke:var(--blue)} .sysv.flow .ar.t{stroke:var(--teal)}
+.sysv.flow .al.p{fill:var(--purple)} .sysv.flow .al.b{fill:var(--blue)} .sysv.flow .al.t{fill:var(--teal)}
+
+#sys .nt{font-size:13px} #sys .ns{font-size:11.5px} #sys .al{font-size:11px} #sys .mlabel{font-size:11.5px;letter-spacing:.04em}
+.sysv .ctitle{font:600 17px var(--sans);fill:var(--text-2);transition:fill .2s}
+.sysv .on .ctitle{fill:var(--c)}
+#gorm{cursor:pointer;transition:box-shadow .2s}
+#gorm:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+#gorm .hint{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--muted);margin:-8px 0 16px;display:flex;align-items:center;gap:6px}
+#gorm .hint b{font-weight:500;display:inline-block;transition:transform .25s}
+#gorm.open .hint b{transform:rotate(45deg)}
+#gorm:not(.open) #sys{display:none}
+#gorm.open #sysC{display:none}
+@media (prefers-reduced-motion:no-preference){ #gorm.open #sys{animation:reveal .35s ease} }
+@keyframes reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* datasets */
+.g-data{grid-area:data;justify-self:start;width:100%;margin-top:52px}
+.data-row{display:flex;gap:14px;align-items:center}
+#data-d4rl{flex:1.15 1 0;min-width:270px} #data-medical{flex:1 1 0;min-width:230px}
+/* once a dataset is clicked it grows (wider, and taller through its fixed-aspect figures); the other one shrinks */
+.dbox{transition:flex-grow .45s cubic-bezier(.3,.7,.2,1),border-color .2s,box-shadow .2s}
+.data-row.picked>.dbox.on{flex-grow:1.9!important} .data-row.picked>.dbox:not(.on){flex-grow:.9!important}
+@media (prefers-reduced-motion:reduce){.dbox{transition:none}}
+.dbox{background:var(--card);border:1px solid var(--line);box-shadow:0 6px 22px -16px rgba(40,50,80,.35);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.dbox.on{background:var(--card);border-color:var(--c-line);box-shadow:0 8px 28px -16px var(--c)}
+.dbox:not(.on):hover{border-color:var(--c-line)}
+.dbox .slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:auto}
+.dbox.one .slots{grid-template-columns:minmax(0,1fr)}
+#data-d4rl .slot{aspect-ratio:8/5}
+.d4grid{display:grid;grid-template-columns:12px repeat(3,minmax(0,1fr)) 36px;column-gap:7px;row-gap:5px;margin-top:auto;align-items:center}
+.ylab,.xlab{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:center;transition:color .2s}
+.ylab{writing-mode:vertical-rl;transform:rotate(180deg);justify-self:center}
+.xlab{margin-top:-2px}
+.ylab::after,.xlab::after{content:" →"}
+.sel.on .ylab,.sel.on .xlab{color:var(--c)}
+.dcap{text-align:left;align-self:end;overflow:visible}
+.dens-legend{align-self:stretch;display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--muted);transition:filter .25s,opacity .25s,color .2s}
+.dens-legend .bar{width:9px;border-radius:5px;background:linear-gradient(0deg,#440154,#3b528b,#21918c,#5ec962,#fde725)}
+.dens-legend .ticks{position:relative;flex:1}
+.dens-legend .ticks span{position:absolute;left:0;transform:translateY(-50%);font-variant-numeric:tabular-nums;line-height:1}
+.dens-legend .ticks span:first-child{transform:none} .dens-legend .ticks span:last-child{transform:translateY(-100%)}
+.sel:not(.on) .dens-legend{filter:grayscale(1);opacity:.5}
+.sel.on .dens-legend{color:var(--c)}
+.med-pair{display:grid;grid-template-columns:minmax(0,0.75fr) minmax(0,1.891fr);gap:8px;align-items:end}
+.med-pair .fig{justify-content:flex-end}
+.med-pair .slot.heart{aspect-ratio:3/4;background:#223c61;border-style:solid}
+.med-pair .slot.heart img{object-fit:contain}
+.med-pair .slot:not(.heart){aspect-ratio:1600/846}
+.med-pair .slot:not(.heart) img{object-fit:contain}
+
+/* evaluation */
+.g-eval{grid-area:eval;align-self:start;margin-left:28px}
+.g-eval h2{font-size:22px;font-weight:600;letter-spacing:-.01em;margin:2px 0 0 6px}
+.ebox{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.esec{border:1px solid transparent;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.esec:not(.on){background:var(--idle)}
+.esec:not(.on):hover{border-color:var(--c-line)}
+.esec.on{background:var(--c-bg);border-color:var(--c-line)}
+.esec .slot{aspect-ratio:16/6}
+.imp-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.esec .slot.imp{aspect-ratio:1534/1684;background:#fff;border-style:solid;position:relative}
+.slot.imp img{object-fit:contain}
+#impNone{display:none;text-align:center;line-height:1.4;padding:8px}
+#impG.none img{display:none} #impG.none #impNone{display:block} #impG.none{background:repeating-linear-gradient(135deg,var(--slot) 0 8px,transparent 8px 16px)}
+.imp-key{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.imp-key span{display:inline-flex;align-items:center;gap:4px}
+.imp-key i{display:inline-block;width:16px;height:0;border-top:2.5px solid}
+.imp-key i.dash{border-top-style:dashed;opacity:.6;border-top-width:2px}
+.imp-key i.k-map{border-top-color:#d62728} .imp-key i.k-pl{border-top-color:#1f77b4} .imp-key i.k-thr{border-top-color:#999;border-top-style:dotted}
+.sel.on .imp-key{color:var(--c)}
+.imp-goal{font-size:12px;line-height:1.35;color:var(--text-2);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 9px;display:flex;gap:7px;align-items:baseline}
+.imp-goal>b:first-child{color:#2b7d70} .imp-goal b.dn{color:#2b7d70}
+.imp-badge{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:8px;padding:4px 6px;font-variant-numeric:tabular-nums;background:var(--card);border:1px solid var(--line)}
+.imp-badge b{white-space:nowrap;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1}
+.imp-badge small{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.imp-badge.down b{color:#2b7d70} .imp-badge.up b{color:#c82828} .imp-badge.flat b{color:var(--muted)} .imp-badge.na{visibility:hidden}
+.sel:not(.on) .imp-badge,.sel:not(.on) .imp-goal{filter:grayscale(1);opacity:.6}
+
+/* MuJoCo evaluation rows: MOBILE failure frame | GORMPO at the same moment | normalized return bars */
+.mj{gap:2px}
+.mj-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.mj-row .slot{aspect-ratio:4/3;border-radius:6px}
+.mj-head .cap{text-align:center}
+.mj .cap{margin-bottom:4px}
+.sel .slot.mj-fail{border:2px solid #c82828}
+.sel .slot.mj-ok{border:2px solid #2b7d70}
+.slot.mj-gain{flex-direction:column;gap:2px;background:var(--card);border:1px solid var(--slot-line);border-style:solid}
+.mj-gain.neg b{color:#c82828}
+.mj-gain b{font-size:22px;font-weight:700;letter-spacing:-.02em;color:#2b7d70;font-variant-numeric:tabular-nums;line-height:1}
+.mj-gain small{font-family:var(--mono);font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sel:not(.on) .slot.mj-gain{filter:none;opacity:.6}
+
+/* evaluation details stay folded until a dataset (or a section) is clicked; then only the matching one opens */
+.ebody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.3,.7,.2,1)}
+.ebody>div{overflow:hidden;min-height:0;display:flex;flex-direction:column;gap:10px}
+#evalBox.picked .esec.on .ebody{grid-template-rows:1fr}
+.esec .head{gap:3px}
+.ehint{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.03em}
+#evalBox.picked .esec.on .ehint{display:none}
+@media (prefers-reduced-motion:reduce){.ebody{transition:none}}
+
+/* connectors */
+#links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible}
+#links path{fill:none}
+.lk{stroke:var(--link);stroke-width:1.4}
+.lk.on{stroke:var(--c);stroke-width:2;stroke-dasharray:7 6}
+@media (prefers-reduced-motion:no-preference){ .lk.on{animation:flow 1.1s linear infinite} }
+@keyframes flow{to{stroke-dashoffset:-13}}
+
+@media (max-width:1000px){
+  .frame{grid-template-columns:minmax(0,1fr);grid-template-areas:"est" "back" "gorm" "data" "eval";padding:28px 20px}
+  .g-back{margin-left:0}
+  .g-data{margin-top:0}
+  #links{display:none}
+}
+@media (max-width:560px){ .data-row{grid-template-columns:minmax(0,1fr)} }
+/* no colour fades on first paint (they start from black) */
+html.preload *,html.preload *::before,html.preload *::after{transition:none!important}
+</style>
+</head>
+<body>
+
+<div class="frame" id="frame">
+  <svg id="links" aria-hidden="true">
+    <defs>
+      <marker id="m-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--link)"/></marker>
+      <marker id="m-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--purple)"/></marker>
+      <marker id="m-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--blue)"/></marker>
+      <marker id="m-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--teal)"/></marker>
+      <marker id="m-brown" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--brown)"/></marker>
+    </defs>
+    <g id="links-g"></g>
+  </svg>
+
+  <section class="g-est">
+    <div class="list acc-purple" id="estCard">
+      <button class="row sel acc-purple" data-group="est" data-id="kde"><span class="name">KDE</span></button>
+      <button class="row sel acc-purple" data-group="est" data-id="vae"><span class="name">VAE</span></button>
+      <button class="row sel acc-purple" data-group="est" data-id="flow"><span class="name">Normalizing flow</span></button>
+      <button class="row sel acc-purple" data-group="est" data-id="diff"><span class="name">Diffusion</span></button>
+      <button class="row sel acc-purple" data-group="est" data-id="node"><span class="name">NeuralODE</span></button>
+    </div>
+  </section>
+
+  <section class="g-back">
+    <div class="list acc-blue" id="backCard">
+      <button class="row sel acc-blue" data-group="back" data-id="mobile"><span class="name">MOBILE</span></button>
+      <button class="row sel acc-blue" data-group="back" data-id="mbpo"><span class="name">MBPO</span></button>
+    </div>
+  </section>
+
+  <div class="center" id="gorm" tabindex="0" role="button" aria-expanded="false">
+    <h1>GORMPO</h1>
+    <div class="tagline">Penalize rollouts that leave the data’s support</div>
+    <div class="hint"><b>+</b><span id="gHint">Click to show details</span></div>
+    <svg id="sysC" class="sysv" viewBox="0 0 420 214" role="img" aria-label="GORMPO overview">
+      <g class="acc-purple" data-mod="ood" id="oodModC">
+        <rect class="mod-bg" x="6" y="6" width="408" height="68" rx="16"/>
+        <rect class="mod" x="6" y="6" width="408" height="68" rx="16"/>
+        <text class="ctitle" x="210" y="45" text-anchor="middle">Generative OOD-regularization</text>
+      </g>
+      <g class="acc-blue" data-mod="mb" id="mbModC">
+        <rect class="mod-bg" x="6" y="140" width="408" height="68" rx="16"/>
+        <rect class="mod" x="6" y="140" width="408" height="68" rx="16"/>
+        <text class="ctitle mbLabel" x="210" y="179" text-anchor="middle">Model-based policy</text>
+      </g>
+      <path class="ar b" d="M130 140V77" marker-end="url(#m-gray)"/>
+      <text class="al b" x="138" y="111">rollouts</text>
+      <path class="ar p" d="M290 74V137" marker-end="url(#m-gray)"/>
+      <text class="al p" x="298" y="111">penalized reward</text>
+    </svg>
+    <svg id="sys" class="sysv" viewBox="0 0 420 372" role="img" aria-label="GORMPO system diagram">
+      <g class="acc-purple" data-mod="ood" id="oodMod">
+        <rect class="mod-bg" x="6" y="6" width="408" height="108" rx="16"/>
+        <rect class="mod" x="6" y="6" width="408" height="108" rx="16"/>
+        <text class="mlabel" x="22" y="26">Generative OOD-regularization</text>
+      </g>
+      <g class="acc-blue" data-mod="mb" id="mbMod">
+        <rect class="mod-bg" x="6" y="136" width="408" height="230" rx="16"/>
+        <rect class="mod" x="6" y="136" width="408" height="230" rx="16"/>
+        <text class="mlabel mbLabel" x="22" y="156">Model-based policy</text>
+      </g>
+
+      <g class="nb acc-purple" id="nDbg">
+        <rect x="14" y="40" width="222" height="56" rx="10"/>
+        <text class="nt" x="125" y="63" text-anchor="middle">4. Density-based guardian</text>
+        <text class="ns" x="125" y="80" text-anchor="middle">likelihood of next state and action</text>
+      </g>
+      <g class="nb acc-purple" id="nPen">
+        <rect x="294" y="40" width="108" height="56" rx="10"/>
+        <text class="nt" x="348" y="63" text-anchor="middle">Penalized</text>
+        <text class="nt" x="348" y="78" text-anchor="middle">reward</text>
+      </g>
+
+      <g class="nb acc-teal" id="nReal">
+        <rect x="8" y="172" width="122" height="60" rx="10"/>
+        <text class="nt" x="69" y="196" text-anchor="middle">1. Replay buffer</text>
+        <text class="ns" x="69" y="213" text-anchor="middle">real data</text>
+      </g>
+      <g class="nb acc-blue" id="nDyn">
+        <rect x="156" y="172" width="108" height="60" rx="10"/>
+        <text class="nt" x="210" y="196" text-anchor="middle">3. Dynamics</text>
+        <text class="ns" x="210" y="213" text-anchor="middle">model ensemble</text>
+      </g>
+      <g class="nb acc-purple" id="nGen">
+        <rect x="290" y="172" width="122" height="60" rx="10"/>
+        <text class="nt" x="351" y="196" text-anchor="middle">5. Replay buffer</text>
+        <text class="ns" x="351" y="213" text-anchor="middle">generated data</text>
+      </g>
+
+      <path class="ar t" d="M130 202H153" marker-end="url(#m-gray)"/>
+      
+      <path class="ar b" d="M210 172V100" marker-end="url(#m-gray)"/>
+      <text class="al b" x="204" y="129" text-anchor="end">predict next state, reward</text>
+
+      <path class="ar p" d="M236 68H291" marker-end="url(#m-gray)"/>
+      <text class="al p" x="264" y="61" text-anchor="middle">penalize</text>
+
+      <path class="ar p" d="M352 96V169" marker-end="url(#m-gray)"/>
+      <text class="al p" x="358" y="128">store</text>
+
+      <path class="ar b" d="M264 202H287" marker-end="url(#m-gray)"/>
+
+
+
+      <g id="mbpoOnly">
+      <text class="al t" x="141" y="248" text-anchor="middle">sample</text>
+      <g class="nb acc-blue" id="nPol">
+        <rect x="150" y="290" width="120" height="52" rx="10"/>
+        <text class="nt" x="210" y="313" text-anchor="middle">2. Policy</text>
+        <text class="nt" x="210" y="328" text-anchor="middle">optimization</text>
+      </g>
+      <path class="ar b" d="M210 290V235" marker-end="url(#m-gray)"/>
+      <text class="al b" x="216" y="266">action</text>
+      <path class="ar t" d="M68 232V316H147" marker-end="url(#m-gray)"/>
+      <text class="al t" x="76" y="308">sample</text>
+      <path class="ar p" d="M352 232V316H273" marker-end="url(#m-gray)"/>
+      <text class="al p" x="300" y="308">sample</text>
+      </g>
+      <g id="mobileOnly" style="display:none">
+        <text class="al t" x="141" y="167" text-anchor="middle">sample</text>
+        <g class="nb acc-blue" id="nPol2">
+          <rect x="30" y="288" width="140" height="56" rx="10"/>
+          <text class="nt" x="100" y="312" text-anchor="middle">2. Policy</text>
+          <text class="nt" x="100" y="327" text-anchor="middle">optimization</text>
+        </g>
+        <g class="nb acc-blue" id="nInc">
+          <rect x="236" y="288" width="140" height="56" rx="10"/>
+          <text class="nt" x="306" y="312" text-anchor="middle">Model–Bellman</text>
+          <text class="nt" x="306" y="327" text-anchor="middle">inconsistency</text>
+        </g>
+        <path class="ar t" d="M68 232V285" marker-end="url(#m-gray)"/>
+        <text class="al t" x="74" y="262">sample</text>
+        <path class="ar b" d="M140 288V258H178V235" marker-end="url(#m-gray)"/>
+        <text class="al b" x="146" y="280">action</text>
+        <path class="ar b" d="M232 232V258H306V285" marker-end="url(#m-gray)"/>
+        <text class="al b" x="240" y="252">ensemble targets</text>
+        <path class="ar b" d="M236 316H173" marker-end="url(#m-gray)"/>
+        <text class="al b" x="204" y="309" text-anchor="middle">penalize</text>
+        <text class="al b" x="204" y="331" text-anchor="middle">critic</text>
+        <path class="ar p" d="M392 232V356H100V347" marker-end="url(#m-gray)"/>
+        <text class="al p" x="386" y="262" text-anchor="end">sample</text>
+      </g>
+    </svg>
+  </div>
+
+  <section class="g-data">
+    <div class="data-row">
+      <div class="dbox sel acc-teal" tabindex="0" data-group="track" data-id="d4rl" id="data-d4rl">
+        <div class="head"><span class="name">Sparse D4RL</span><span class="sub">Medium-expert, 22–28% of an unsafe region removed</span></div>
+        <div class="d4grid">
+          <div></div><div class="slot body"><img src="halfcheetah_body.png" alt="The halfcheetah robot"></div><div class="slot body"><img src="hopper_body.png" alt="The hopper robot"></div><div class="slot body"><img src="walker2d_body.png" alt="The walker2d robot"></div><div class="cap dcap">density</div>
+          <div class="ylab">action</div><div class="slot plot"><img src="halfcheetah_action_reward.png?v=3" alt="Reward vs. action norm in the sparse halfcheetah dataset; the thinned-out corner is shaded gray"></div><div class="slot plot"><img src="hopper_action_reward.png?v=3" alt="Reward vs. action norm in the sparse hopper dataset; the thinned-out corner is shaded gray"></div><div class="slot plot"><img src="walker2d_action_reward.png?v=3" alt="Reward vs. action norm in the sparse walker2d dataset; the thinned-out corner is shaded gray"></div><div class="dens-legend" role="img" aria-label="Point colour: density relative to the densest region, log scale from 0.001 to 1"><div class="bar"></div><div class="ticks"><span style="top:0">1</span><span style="top:33.3%">0.1</span><span style="top:66.7%">0.01</span><span style="top:100%">0.001</span></div></div>
+          <div></div><div class="xlab">reward</div><div class="xlab">reward</div><div class="xlab">reward</div><div></div>
+          <div></div><div class="cap">halfcheetah</div><div class="cap">hopper</div><div class="cap">walker2d</div><div></div>
+        </div>
+      </div>
+      <div class="dbox one sel acc-teal" tabindex="0" data-group="track" data-id="medical" id="data-medical">
+        <div class="head"><span class="name">Our medical dataset</span><span class="sub">Cardiogenic shock, 379 patients on MCS</span></div>
+        <div class="slots">
+          <div class="med-pair">
+            <div class="fig"><div class="slot heart"><img src="impella_heart.jpeg" alt="Illustration of an Impella heart pump placed across the aortic valve into the left ventricle"></div><div class="cap">Impella</div></div>
+            <div class="fig"><div class="slot"><img src="medical_sparse_cropped.png?v=2" alt="Reward vs. pump level in the medical dataset; the sparse corner is shaded gray"></div><div class="cap">sparse reward–action</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="g-eval">
+    <div class="ebox" id="evalBox">
+      <h2>Policy evaluation</h2>
+      <div class="esec sel acc-brown" tabindex="0" data-group="track" data-id="d4rl" id="eval-mujoco">
+        <div class="head"><span class="name">MuJoCo tasks</span><span class="ehint">+ click a dataset to see results</span><span class="sub" id="mjSub"></span></div>
+        <div class="ebody"><div>
+        <div class="fig mj">
+          <div class="mj-row mj-head"><div class="cap">MOBILE</div><div class="cap">GORMPO</div><div class="cap" id="mjGainHead">return gain</div></div>
+          <div class="mj-row">
+            <div class="slot mj-fail"><img src="halfcheetah_eval_mobile.png" alt="MOBILE on halfcheetah: fallen or flipped"></div>
+            <div class="slot mj-ok"><img src="halfcheetah_eval_gormpo.png" alt="GORMPO on halfcheetah at the same moment, still going"></div>
+            <div class="slot mj-gain" id="gain-halfcheetah"><b></b><small></small></div>
+          </div>
+          <div class="cap">halfcheetah</div>
+          <div class="mj-row">
+            <div class="slot mj-fail"><img src="hopper_eval_mobile.png" alt="MOBILE on hopper: fallen or flipped"></div>
+            <div class="slot mj-ok"><img src="hopper_eval_gormpo.png" alt="GORMPO on hopper at the same moment, still going"></div>
+            <div class="slot mj-gain" id="gain-hopper"><b></b><small></small></div>
+          </div>
+          <div class="cap">hopper</div>
+          <div class="mj-row">
+            <div class="slot mj-fail"><img src="walker2d_eval_mobile.png" alt="MOBILE on walker2d: fallen or flipped"></div>
+            <div class="slot mj-ok"><img src="walker2d_eval_gormpo.png" alt="GORMPO on walker2d at the same moment, still going"></div>
+            <div class="slot mj-gain" id="gain-walker2d"><b></b><small></small></div>
+          </div>
+          <div class="cap">walker2d</div>
+        </div>
+        </div></div>
+      </div>
+      <div class="esec sel acc-brown" tabindex="0" data-group="track" data-id="medical" id="eval-impella">
+        <div class="head"><span class="name">Impella weaning</span><span class="ehint">+ click a dataset to see results</span><span class="sub" id="impSub"></span></div>
+        <div class="ebody"><div>
+        <div class="imp-goal"><b>✓</b><span>Blood pressure stays above 60: the patient is stable, so the pump should be <b class="dn">weaned</b>.</span></div>
+        <div class="imp-pair">
+          <div class="fig"><div class="imp-badge" id="impBadgeC"></div><div class="slot imp"><img src="impella_map_cormpo.png?v=3" alt="CORMPO: recommended pump level and predicted blood pressure over six hours in the digital twin"></div><div class="cap">CORMPO</div></div>
+          <div class="fig"><div class="imp-badge" id="impBadgeG"></div><div class="slot imp" id="impG"><img id="impImg" src="impella_map_node.png" alt=""><span id="impNone">no MOBILE-based<br>medical policy</span></div><div class="cap" id="impCap">GORMPO</div></div>
+        </div>
+        <div class="imp-key"><span><i class="k-map"></i>blood pressure</span><span><i class="k-map dash"></i>observed</span><span><i class="k-pl"></i>P-level</span><span><i class="k-pl dash"></i>clinician decision</span><span><i class="k-thr"></i>critical threshold</span></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const state = {est:"node", back:"mbpo", track:"medical"};
+// Table 1 of the paper: sparse D4RL medium-expert, normalized return (mean over 3 seeds)
+const D4RL = {
+  mobile: {halfcheetah:{base:104.0, kde:103.7, vae:106.0, flow:104.6, diff:103.0, node:104.8},
+           hopper:     {base:95.2,  kde:95.2,  vae:113.0, flow:95.5,  diff:113.0, node:112.9},
+           walker2d:   {base:116.0, kde:117.0, vae:117.0, flow:118.0, diff:117.0, node:49.2}},
+  mbpo:   {halfcheetah:{base:63.7,  kde:61.7,  vae:89.9,  flow:86.0,  diff:85.7,  node:80.3},
+           hopper:     {base:4.81,  kde:8.91,  vae:2.32,  flow:10.0,  diff:14.1,  node:5.05},
+           walker2d:   {base:3.19,  kde:6.31,  vae:8.20,  flow:10.1,  diff:5.23,  node:3.44}},
+};
+const EST_NAME = {kde:"KDE", vae:"VAE", flow:"RealNVP", diff:"DDPM", node:"NeuralODE"};
+// Impella: recommended P-level per hour for the patient shown (digital-twin rollouts; MBPO-based GORMPO)
+const IMP = {cormpo:[6,8,8,8,8,8], kde:[5,5,4,6,6,5], vae:[4,4,4,4,4,4], flow:[8,8,8,8,8,7], diff:[5,5,5,5,5,5], node:[6,6,5,4,5,4]};
+function badge(el, pl){
+  el.className = "imp-badge"; el.innerHTML = "";
+  if (!pl) { el.classList.add("na"); el.textContent = "–"; return; }
+  const a = pl[0], z = pl[pl.length-1], dir = z < a ? "down" : z > a ? "up" : "flat";
+  el.classList.add(dir);
+  el.innerHTML = `<b>P-level ${a} → ${z}</b><small>${dir === "down" ? "↓ steps down" : dir === "up" ? "↑ steps up" : "holds"}</small>`;
+}
+const fmt = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
+// MOBILE: % change over MOBILE; MBPO: absolute score change (MBPO's base scores are near zero on hopper/walker2d,
+// so a percentage would be misleading). With no estimator picked, each task shows its best estimator.
+function setGains(){
+  const back = state.back || "mobile", B = back === "mobile" ? "MOBILE" : "MBPO";
+  Object.entries(D4RL[back]).forEach(([env, row])=>{
+    const k = state.est || ["kde","vae","flow","diff","node"].reduce((a,b)=> row[b] > row[a] ? b : a);
+    const v = row[k], d = v - row.base, cell = $("gain-"+env);
+    const big = back === "mobile" ? `${d >= 0 ? "+" : "−"}${Math.abs(d / row.base * 100).toFixed(1)}%`
+                                  : `${d >= 0 ? "+" : "−"}${fmt(Math.abs(d))}`;
+    cell.querySelector("b").textContent = big;
+    cell.querySelector("small").textContent = `${fmt(row.base)} → ${fmt(v)}`;
+    cell.classList.toggle("neg", d < 0);
+    cell.title = `${env}: ${B} ${fmt(row.base)} → ${B} + GORMPO-${EST_NAME[k]} ${fmt(v)}`;
+  });
+  $("mjSub").textContent = (state.est ? `GORMPO-${EST_NAME[state.est]}` : "Best GORMPO") + ` vs. ${B}`;
+  $("mjGainHead").textContent = back === "mobile" ? "return gain" : "score change";
+  // Impella: patient 1590 rolled out in the digital twin; only MBPO-based medical policies exist
+  const ek = state.est || "node", none = back === "mobile";
+  badge($("impBadgeC"), IMP.cormpo); badge($("impBadgeG"), none ? null : IMP[ek]);
+  $("impG").classList.toggle("none", none);
+  $("impImg").src = `impella_map_${ek}.png?v=3`;
+  $("impImg").alt = `GORMPO-${EST_NAME[ek]}: recommended pump level and predicted blood pressure over six hours`;
+  $("impCap").textContent = none ? "GORMPO" : `GORMPO-${EST_NAME[ek]}`;
+  $("impSub").textContent = none ? "Blood pressure and P-level over 6 h in the digital twin" : `Blood pressure and P-level over 6 h in the digital twin`;
+}
+const frame = document.getElementById("frame");
+const gLinks = document.getElementById("links-g");
+const $ = id => document.getElementById(id);
+
+function apply(){
+  document.querySelectorAll(".sel").forEach(el=>{
+    const on = state[el.dataset.group] === el.dataset.id;
+    el.classList.toggle("on", on);
+    el.setAttribute("aria-pressed", on);
+  });
+  $("estCard").classList.toggle("has-on", !!state.est);
+  $("backCard").classList.toggle("has-on", !!state.back);
+  const E=!!state.est, B=!!state.back, T=!!state.track;
+  document.querySelectorAll('[data-mod="ood"]').forEach(m=>m.classList.toggle("on", E));
+  document.querySelectorAll('[data-mod="mb"]').forEach(m=>m.classList.toggle("on", B));
+  $("nDbg").classList.toggle("on", E);
+  $("nPen").classList.toggle("on", E && B);
+  $("nGen").classList.toggle("on", E && B);
+  $("nDyn").classList.toggle("on", B);
+  $("nPol").classList.toggle("on", B);
+  $("nPol2").classList.toggle("on", B);
+  $("nInc").classList.toggle("on", B);
+  const mob = state.back === "mobile";
+  $("mbpoOnly").style.display = mob ? "none" : "";
+  $("mobileOnly").style.display = mob ? "" : "none";
+  $("nReal").classList.toggle("on", T);
+  const bn = B ? (state.back==="mbpo" ? " · MBPO" : " · MOBILE") : "";
+  document.querySelectorAll(".mbLabel").forEach(t=>t.textContent = "Model-based policy" + bn);
+  const flow = E && B && T;
+  document.querySelectorAll(".sysv").forEach(v=>v.classList.toggle("flow", flow));
+  document.querySelectorAll(".sysv .ar").forEach(a=>{
+    const k = a.classList.contains("p") ? "purple" : a.classList.contains("b") ? "blue" : "teal";
+    a.setAttribute("marker-end", `url(#m-${flow ? k : "gray"})`);
+  });
+  setGains();
+  draw();
+}
+
+function rel(el){
+  const f = frame.getBoundingClientRect(), r = el.getBoundingClientRect();
+  return {l:r.left-f.left, r:r.right-f.left, t:r.top-f.top, b:r.bottom-f.top, cx:(r.left+r.right)/2-f.left, cy:(r.top+r.bottom)/2-f.top, w:r.width, h:r.height};
+}
+const curve = (x1,y1,x2,y2) => { const dx=Math.max(30,(x2-x1)*.55); return `M${x1} ${y1}C${x1+dx} ${y1},${x2-dx} ${y2},${x2} ${y2}`; };
+// same S-curve, running bottom-to-top (datasets -> GORMPO)
+const vcurve = (x1,y1,x2,y2) => { const dy=Math.max(30,(y1-y2)*.55); return `M${x1} ${y1}C${x1} ${y1-dy},${x2} ${y2+dy},${x2} ${y2}`; };
+function fork(x1,y1,fx,x2,y2,r=12){
+  if (Math.abs(y2-y1) < 2*r) return `M${x1} ${y1}H${fx}V${y2}H${x2}`;
+  const s = y2 > y1 ? 1 : -1;
+  return `M${x1} ${y1}H${fx-r}Q${fx} ${y1} ${fx} ${y1+s*r}V${y2-s*r}Q${fx} ${y2} ${fx+r} ${y2}H${x2}`;
+}
+
+// centre the dataset row under GORMPO (so both dataset arrows rise symmetrically into its bottom centre),
+// as wide as fits without running into the evaluation column
+function centerData(){
+  const gd = document.querySelector(".g-data");
+  const g = rel($("gorm")), e = rel(document.querySelector(".g-eval")), f = rel($("frame"));
+  const half = Math.min(e.l - 28 - g.cx, g.cx - 28, 430);
+  const left0 = rel(gd).l - (parseFloat(gd.style.marginLeft) || 0);
+  gd.style.width = `${2 * half}px`;
+  gd.style.marginLeft = `${g.cx - half - left0}px`;
+}
+function draw(){
+  const gd = document.querySelector(".g-data");
+  if (getComputedStyle($("links")).display === "none") { gd.style.width = gd.style.marginLeft = ""; return; }
+  centerData();
+  const L = [];
+  const open = $("gorm").classList.contains("open");
+  const est = rel($("estCard")), dbg = rel(open ? $("nDbg").querySelector("rect") : $("oodModC").querySelector(".mod"));
+  document.querySelectorAll('[data-group="est"]').forEach(row=>{
+    L.push({d:curve(est.r, rel(row).cy, dbg.l-4, dbg.cy), on:state.est===row.dataset.id, acc:"purple"});
+  });
+  const back = rel($("backCard")), pol = rel((open ? $("mbMod") : $("mbModC")).querySelector(".mod"));
+  document.querySelectorAll('[data-group="back"]').forEach(row=>{
+    L.push({d:curve(back.r, rel(row).cy, pol.l-4, pol.cy), on:state.back===row.dataset.id, acc:"blue"});
+  });
+  const g = rel($("gorm"));
+  // datasets: S-curves converging on one point at the middle of GORMPO's bottom edge
+  ["d4rl","medical"].forEach(id=>{
+    const c = rel($("data-"+id));
+    L.push({d:vcurve(c.cx, c.t, g.cx, g.b+4), on:state.track===id, acc:"teal"});
+  });
+  // evaluation: S-curves fanning out of one point on GORMPO's right edge, mirroring the inputs on the left
+  const eb = rel($("evalBox")), secs = [["mujoco","d4rl"],["impella","medical"]].map(([k,id])=>[rel($("eval-"+k)),id]);
+  const y0 = pol.cy;  // leaves from the policy module, as the backbone links enter it on the left
+  secs.forEach(([sec,id])=>{
+    L.push({d:curve(g.r, y0, sec.l-4, sec.cy), on:state.track===id, acc:"brown"});
+  });
+  L.sort((a,b)=>a.on-b.on);
+  gLinks.innerHTML = L.map(l=>`<path class="lk ${l.on ? "on acc-"+l.acc : ""}" d="${l.d}" marker-end="url(#m-${l.on ? l.acc : "gray"})"/>`).join("");
+}
+
+function pick(el){ const g=el.dataset.group, id=el.dataset.id; state[g] = state[g]===id ? null : id;
+  if (g === "track") {  // dataset sizes and evaluation details change only after a click
+    document.querySelector(".data-row").classList.toggle("picked", !!state.track);
+    $("evalBox").classList.toggle("picked", !!state.track);
+  }
+  apply(); }
+document.querySelectorAll(".sel").forEach(el=>{
+  el.addEventListener("click", ()=>pick(el));
+  if (!el.matches("button")) el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(el);} });
+});
+const gorm = $("gorm");
+function toggleGorm(){
+  const open = gorm.classList.toggle("open");
+  gorm.setAttribute("aria-expanded", open);
+  $("gHint").textContent = open ? "Click to hide details" : "Click to show details";
+  draw();
+}
+gorm.addEventListener("click", toggleGorm);
+gorm.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleGorm(); } });
+const ro = new ResizeObserver(draw); ro.observe(frame); document.querySelectorAll(".dbox,.esec").forEach(b => ro.observe(b));
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+apply();
+// embedded in the project page: report the content height to the parent so it can size the iframe
+function reportHeight(){ if (window.parent !== window) parent.postMessage({gormpoDiagramHeight: document.documentElement.scrollHeight}, "*"); }
+new ResizeObserver(reportHeight).observe(document.body);
+window.addEventListener("load", reportHeight);
+requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove("preload")));
+</script>
+</body>
+</html>
