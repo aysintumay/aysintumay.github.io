@@ -204,3 +204,7 @@ d-article .future-card li { position: relative; padding-left: 18px; margin: 0 0 
 d-article .future-card li:last-child { margin-bottom: 0; }
 d-article .future-card li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 7px; height: 7px; border-radius: 50%;
   background: linear-gradient(135deg, #5b3fe0, #4b2fc9); }
+
+/* conference line under the title */
+d-title .venue { grid-column: text; font-size: 19px; font-weight: 600; color: #4b2fc9; letter-spacing: 0.01em;
+  margin: -0.4rem 0 0.9rem; }
