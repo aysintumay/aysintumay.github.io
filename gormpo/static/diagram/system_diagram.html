@@ -216,7 +216,7 @@ body{font-family:var(--sans);color:var(--text);padding:2px;-webkit-font-smoothin
 .imp-badge{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:8px;padding:4px 6px;font-variant-numeric:tabular-nums;background:var(--card);border:1px solid var(--line)}
 .imp-badge b{white-space:nowrap;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1}
 .imp-badge small{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.imp-badge.down b{color:#2b7d70} .imp-badge.up b{color:#c82828} .imp-badge.flat b{color:var(--muted)} .imp-badge.na{visibility:hidden}
+.imp-badge.down b{color:#c82828} .imp-badge.up b{color:#2b7d70} .imp-badge.flat b{color:var(--muted)} .imp-badge.na{visibility:hidden}
 .sel:not(.on) .imp-badge,.sel:not(.on) .imp-goal{filter:grayscale(1);opacity:.6}
 
 /* MuJoCo evaluation rows: MOBILE failure frame | GORMPO at the same moment | normalized return bars */
@@ -462,9 +462,9 @@ html.preload *,html.preload *::before,html.preload *::after{transition:none!impo
       <div class="esec sel acc-brown" tabindex="0" data-group="track" data-id="medical" id="eval-impella">
         <div class="head"><span class="name">Impella weaning</span><span class="ehint">+ click a dataset to see results</span><span class="sub" id="impSub"></span></div>
         <div class="ebody"><div>
-        <div class="imp-goal"><b>✓</b><span>Blood pressure stays above 60: the patient is stable, so the pump should be <b class="dn">weaned</b>.</span></div>
+        <div class="imp-goal"><b style="color:#c82828">!</b><span>The clinician cut the P-level from 9 to 2 and blood pressure fell below the critical threshold. The pump should <b class="dn">not</b> be weaned this fast.</span></div>
         <div class="imp-pair">
-          <div class="fig"><div class="imp-badge" id="impBadgeC"></div><div class="slot imp"><img src="impella_map_cormpo.png?v=3" alt="CORMPO: recommended pump level and predicted blood pressure over six hours in the digital twin"></div><div class="cap">CORMPO</div></div>
+          <div class="fig"><div class="imp-badge" id="impBadgeC"></div><div class="slot imp"><img src="impella_map_cormpo.png?v=5" alt="CORMPO: recommended pump level and predicted blood pressure over six hours in the digital twin"></div><div class="cap">CORMPO</div></div>
           <div class="fig"><div class="imp-badge" id="impBadgeG"></div><div class="slot imp" id="impG"><img id="impImg" src="impella_map_node.png" alt=""><span id="impNone">no MOBILE-based<br>medical policy</span></div><div class="cap" id="impCap">GORMPO</div></div>
         </div>
         <div class="imp-key"><span><i class="k-map"></i>blood pressure</span><span><i class="k-map dash"></i>observed</span><span><i class="k-pl"></i>P-level</span><span><i class="k-pl dash"></i>clinician decision</span><span><i class="k-thr"></i>critical threshold</span></div>
@@ -487,7 +487,7 @@ const D4RL = {
 };
 const EST_NAME = {kde:"KDE", vae:"VAE", flow:"RealNVP", diff:"DDPM", node:"NeuralODE"};
 // Impella: recommended P-level per hour for the patient shown (digital-twin rollouts; MBPO-based GORMPO)
-const IMP = {cormpo:[6,8,8,8,8,8], kde:[5,5,4,6,6,5], vae:[4,4,4,4,4,4], flow:[8,8,8,8,8,7], diff:[5,5,5,5,5,5], node:[6,6,5,4,5,4]};
+const IMP = {cormpo:[4,4,4,4,4,4], kde:[8,8,7,6,6,6], vae:[8,7,6,6,6,6], flow:[8,8,7,6,6,6], diff:[8,8,8,8,8,8], node:[5,4,8,8,7,7]};
 function badge(el, pl){
   el.className = "imp-badge"; el.innerHTML = "";
   if (!pl) { el.classList.add("na"); el.textContent = "–"; return; }
@@ -516,7 +516,7 @@ function setGains(){
   const ek = state.est || "node", none = back === "mobile";
   badge($("impBadgeC"), IMP.cormpo); badge($("impBadgeG"), none ? null : IMP[ek]);
   $("impG").classList.toggle("none", none);
-  $("impImg").src = `impella_map_${ek}.png?v=3`;
+  $("impImg").src = `impella_map_${ek}.png?v=5`;
   $("impImg").alt = `GORMPO-${EST_NAME[ek]}: recommended pump level and predicted blood pressure over six hours`;
   $("impCap").textContent = none ? "GORMPO" : `GORMPO-${EST_NAME[ek]}`;
   $("impSub").textContent = none ? "Blood pressure and P-level over 6 h in the digital twin" : `Blood pressure and P-level over 6 h in the digital twin`;
