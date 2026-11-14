@@ -50,7 +50,8 @@
   };
 
   const NS = "http://www.w3.org/2000/svg";
-  const H_BIG = 450, H_SMALL = 230;  // expanded panel is taller as well as wider
+  const H_BIG = 450, H_SMALL = 230;
+  const PHONE = matchMedia("(max-width: 600px)");  // expanded panel is taller as well as wider
 
   function el(tag, attrs, parent, text) {
     const e = document.createElementNS(NS, tag);
@@ -95,13 +96,14 @@
 
   function draw(cfg, panel, m, big, t = 1e9) {
     const svg = panel.querySelector("svg");
-    const W = Math.max(120, panel.clientWidth), H = big ? H_BIG : H_SMALL;
+    const phone = PHONE.matches;  // phone layout: angled names, vertical values (desktop unchanged)
+    const W = Math.max(120, panel.clientWidth), H = big ? H_BIG + (phone ? 40 : 0) : H_SMALL;
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     svg.setAttribute("height", H);
     svg.innerHTML = "";
     defs(svg);
     const n = cfg.methods.length;
-    const M = {l: big ? 58 : 10, r: 10, t: big ? 40 : 14, b: big ? 88 : 14};
+    const M = {l: big ? (phone ? 40 : 58) : 10, r: 10, t: big ? (phone ? 56 : 40) : 14, b: big ? (phone ? 128 : 88) : 14};
     const pw = W - M.l - M.r, ph = H - M.t - M.b;
     const hi = Math.max(0, ...m.v.map(([a, s]) => a + s)), lo = Math.min(0, ...m.v.map(([a, s]) => a - s));
     const pad = (hi - lo) * (big ? 0.1 : 0.04);
@@ -116,7 +118,7 @@
         el("text", {x: M.l - 8, y: sy(v) + 5, "text-anchor": "end", class: "bp-tick"}, svg, +v.toFixed(3));
       }
       // group brackets under the bar labels
-      const y = M.t + ph + 52;
+      const y = M.t + ph + (phone ? 92 : 52);
       cfg.groups.forEach(([name, a, b]) => {
         const x0 = M.l + bw * a + 6, x1 = M.l + bw * b - 6;
         el("path", {d: `M${x0} ${y - 5}V${y}H${x1}V${y - 5}`, class: "bp-bracket"}, svg);
@@ -147,6 +149,15 @@
       el("line", {x1: cx, x2: cx, y1: ea, y2: eb, class: "bp-err"}, g);  // ± std
       el("line", {x1: cx - cw, x2: cx + cw, y1: ea, y2: ea, class: "bp-err"}, g);
       el("line", {x1: cx - cw, x2: cx + cw, y1: eb, y2: eb, class: "bp-err"}, g);
+      const ly = M.t + ph + 21;
+      if (phone) {  // narrow bars: values run upward from the error bar, names hang at an angle
+        const up = mean >= 0, vy = up ? ea - 6 : eb + 6;
+        el("text", {x: cx + 4.5, y: vy, "text-anchor": up ? "start" : "end", transform: `rotate(-90 ${cx + 4.5} ${vy})`,
+          class: "bp-val bp-phone" + (mean === best ? " bp-best" : "")}, g, (mean === best ? "★ " : "") + mean.toFixed(cfg.digits));
+        el("text", {x: cx + 4, y: ly - 8, "text-anchor": "end", transform: `rotate(-50 ${cx + 4} ${ly - 8})`,
+          class: "bp-lab bp-phone"}, g, meth.short || meth.name);
+        return;
+      }
       const vy = mean < 0 ? eb + 19 : ea - 8;
       el("text", {x: cx, y: vy, "text-anchor": "middle",
         class: "bp-val" + (mean === best ? " bp-best" : "")}, g, mean.toFixed(cfg.digits));
@@ -154,7 +165,6 @@
         el("text", {x: cx, y: mean < 0 ? vy + 19 : vy - 19, "text-anchor": "middle", class: "bp-star",
           fill: meth.color}, g, "★");
       const [l1, l2] = splitLabel(meth.short || meth.name);
-      const ly = M.t + ph + 21;
       el("text", {x: cx, y: ly, "text-anchor": "middle", class: "bp-lab"}, g, l1);
       if (l2) el("text", {x: cx, y: ly + 17, "text-anchor": "middle", class: "bp-lab"}, g, l2);
     });
@@ -215,6 +225,7 @@
       animate();
     }
     new ResizeObserver(redraw).observe(wrap);
+    PHONE.addEventListener("change", redraw);
     // first draw: animate when the chart scrolls into view
     const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); update(); } },
       {threshold: 0.3});

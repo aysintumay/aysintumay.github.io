@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://aysintumay.github.io/gormpo/static/images/gormpo_overview.png">
   <meta name="twitter:card" content="summary_large_image">
   <script src="./static/js/template.v2.js"></script>
-  <link rel="stylesheet" href="./static/css/index.css?v=18">
+  <link rel="stylesheet" href="./static/css/index.css?v=19">
 </head>
 <body>
 
@@ -55,7 +55,7 @@
     <a href="#citation">Cite</a>
   </div>
   <figure class="l-screen-inset system-diagram">
-    <iframe id="system-diagram" src="./static/diagram/system_diagram.html?v=47" title="Interactive GORMPO system diagram" scrolling="no"></iframe>
+    <iframe id="system-diagram" src="./static/diagram/system_diagram.html?v=48" title="Interactive GORMPO system diagram" scrolling="no"></iframe>
   </figure>
   <script>
     window.addEventListener("message", e => {
@@ -101,8 +101,11 @@
 
 
 <figure class="l-page">
-  <img src="./static/images/fig1_medical_likelihoods_right.png" style="max-width: 620px; display: block; margin: 0 auto;"
-       alt="Log-likelihood histograms of training data and world-model rollouts under KDE and Neural ODE density models">
+  <picture>
+    <source media="(max-width: 600px)" srcset="./static/images/fig1_medical_likelihoods_phone.png?v=1">
+    <img src="./static/images/fig1_medical_likelihoods_right.png" style="max-width: 620px; display: block; margin: 0 auto;"
+         alt="Log-likelihood histograms of training data and world-model rollouts under KDE and Neural ODE density models">
+  </picture>
   <figcaption>How likely two density models think the training data (orange) and the world model's imagined
     rollouts (purple) are on our medical dataset. The rollouts land well outside the data. KDE dumps most of them
     into one spike at its lowest score, while the Neural ODE spreads them out smoothly.</figcaption>
@@ -222,9 +225,13 @@
 </p>
 
 <figure class="l-page video-figure">
-  <video controls muted playsinline preload="metadata" poster="./static/images/medical_11415_poster.jpg?v=1"
+  <video class="only-wide" controls muted playsinline preload="metadata" poster="./static/images/medical_11415_poster.jpg?v=1"
          aria-label="Six-hour digital-twin rollouts for one patient: pump levels and predicted vitals under CORMPO and GORMPO-NeuralODE, against what the clinician did">
     <source src="./static/videos/medical_11415.mp4?v=1" type="video/mp4">
+  </video>
+  <video class="only-phone" controls muted playsinline preload="none" poster="./static/images/medical_11415_phone_poster.jpg?v=1"
+         aria-label="Six-hour digital-twin rollouts for one patient: pump levels and predicted vitals under CORMPO and GORMPO-NeuralODE, against what the clinician did">
+    <source src="./static/videos/medical_11415_phone.mp4?v=1" type="video/mp4">
   </video>
   <figcaption>One patient, six hours in the digital twin. The clinician (dash-dot) lowers the pump from P8 to P6, and
     the real patient's blood pressure and pulsatility collapse right after. CORMPO (dotted) weans even further,
@@ -281,7 +288,7 @@
   Sometimes the best guardian isn't the sharpest one, just the most cautious and conservative.
 </p>
 
-<script src="./static/js/results_charts.js?v=4"></script>
+<script src="./static/js/results_charts.js?v=5"></script>
 <script src="./static/js/ood_points.js?v=2"></script>
 <script src="./static/js/ood_scatter.js?v=10"></script>
 

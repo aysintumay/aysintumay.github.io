@@ -186,6 +186,14 @@ figure.system-diagram iframe { width: 100%; height: 820px; border: 0; display: b
 .bar-panels .bp-lab { font-size: 14.5px; fill: rgba(0,0,0,0.65); }
 .bar-panels .bp-bracket { fill: none; stroke: rgba(0,0,0,0.25); stroke-linecap: round; }
 .bar-panels .bp-group { font-size: 13px; font-weight: 600; fill: rgba(0,0,0,0.55); letter-spacing: 0.08em; text-transform: uppercase; }
+/* phone only: angled method names, vertical values */
+@media (max-width: 600px) {
+  .bar-panels .bp-lab.bp-phone { font-size: 12px; }
+  .bar-panels .bp-val.bp-phone { font-size: 11.5px; }
+  .bar-panels .bp-val.bp-phone.bp-best { font-size: 12px; }
+  .bar-panels .bp-group { font-size: 11px; letter-spacing: 0.04em; }
+  .bar-panels .bp-tick { font-size: 12px; }
+}
 @media (max-width: 700px) { .bar-panels .bp-panel:not(.on) { display: none; } }
 @media (prefers-reduced-motion: reduce) { .bar-panels .bp-panel { transition: none; } }
 
@@ -208,3 +216,10 @@ d-article .future-card li::before { content: ""; position: absolute; left: 2px; 
 /* conference line under the title */
 d-title .venue { grid-column: text; font-size: 19px; font-weight: 600; color: #4b2fc9; letter-spacing: 0.01em;
   margin: -0.4rem 0 0.9rem; }
+
+/* phone-specific media: the wide version stays as is on larger screens */
+video.only-phone { display: none !important; }
+@media (max-width: 600px) {
+  video.only-wide { display: none !important; }
+  video.only-phone { display: block !important; }
+}
