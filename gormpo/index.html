@@ -221,16 +221,15 @@
   team actually wants.
 </p>
 
-<!-- Patient trajectory figure. To replace it with a pre-recorded video later, swap the <img> below for:
-     <video controls muted playsinline preload="metadata" poster="./static/images/medical_comparison.png">
-       <source src="./static/videos/medical_comparison.mp4" type="video/mp4">
-     </video> -->
-<figure class="l-page">
-  <img src="./static/images/medical_comparison.png" alt="Recommended pump levels and predicted blood pressure for one patient over six hours, per method">
-  <figcaption>One patient's rolled-out six-hour trajectories by baselines and GORMPO-NeuralODE. Solid blue: the pump level each policy recommends; dashed blue:
-    what was actually used. Red: predicted (solid) and observed (dashed) mean arterial pressure; dotted gray: the
-    clinical threshold. Blood pressure stays above the threshold, so the ideal move is to step support down every
-    hour. GORMPO-NeuralODE follows that pattern more closely than the baselines.</figcaption>
+<figure class="l-page video-figure">
+  <video controls muted playsinline preload="metadata" poster="./static/images/medical_11415_poster.jpg?v=1"
+         aria-label="Six-hour digital-twin rollouts for one patient: pump levels and predicted vitals under CORMPO and GORMPO-NeuralODE, against what the clinician did">
+    <source src="./static/videos/medical_11415.mp4?v=1" type="video/mp4">
+  </video>
+  <figcaption>One patient, six hours in the digital twin. The clinician (dash-dot) lowers the pump from P8 to P6, and
+    the real patient's blood pressure and pulsatility collapse right after. CORMPO (dotted) weans even further,
+    down to P4 (reward 2.88). GORMPO-NeuralODE (solid) keeps support at P8, and its forecast vitals stay
+    stable (reward 3.62).</figcaption>
 </figure>
 
 
