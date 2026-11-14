@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://aysintumay.github.io/gormpo/static/images/gormpo_overview.png">
   <meta name="twitter:card" content="summary_large_image">
   <script src="./static/js/template.v2.js"></script>
-  <link rel="stylesheet" href="./static/css/index.css?v=19">
+  <link rel="stylesheet" href="./static/css/index.css?v=20">
 </head>
 <body>
 
@@ -58,10 +58,28 @@
     <iframe id="system-diagram" src="./static/diagram/system_diagram.html?v=48" title="Interactive GORMPO system diagram" scrolling="no"></iframe>
   </figure>
   <script>
-    window.addEventListener("message", e => {
-      const h = e.data && e.data.gormpoDiagramHeight;
-      if (h) document.getElementById("system-diagram").style.height = h + "px";
-    });
+    // narrow screens: keep the wide (horizontal) diagram and scale it down to fit
+    (() => {
+      const DESIGN_W = 1300, ifr = document.getElementById("system-diagram"), fig = ifr.parentElement;
+      let h = 820;
+      function fit() {
+        const cs = getComputedStyle(fig), w = fig.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        if (w > 0 && w <= 1000) {  // below this the diagram would switch to its stacked layout
+          const s = w / DESIGN_W;
+          Object.assign(ifr.style, {width: DESIGN_W + "px", height: h + "px", transform: "scale(" + s + ")", transformOrigin: "0 0"});
+          fig.style.height = (h * s) + "px";
+        } else {
+          Object.assign(ifr.style, {width: "", height: h + "px", transform: "", transformOrigin: ""});
+          fig.style.height = "";
+        }
+      }
+      window.addEventListener("message", e => {
+        const nh = e.data && e.data.gormpoDiagramHeight;
+        if (nh) { h = nh; fit(); }
+      });
+      new ResizeObserver(fit).observe(fig);
+      fit();
+    })();
   </script>
 </d-title>
 
